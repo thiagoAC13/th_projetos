@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Di Med — Gerador de Documentos Timbrados</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- ── Header ── -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-mark">
+            <span class="brand-icon">🏥</span>
+          </div>
+          <div class="brand-text">
+            <h1>Di Med</h1>
+            <p>Centro Médico — Automação de Documentos</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Main ── -->
+    <main class="main">
+      <section class="card">
+        <div class="card-header">
+          <h2>Sobrepor Documento ao Papel Timbrado</h2>
+          <p class="subtitle">
+            Faça upload do papel timbrado e do documento de resultado.
+            O sistema centralizará o conteúdo automaticamente, preservando as margens.
+          </p>
+        </div>
+
+        <form id="mergeForm" novalidate>
+
+          <!-- Upload Zone A: Letterhead -->
+          <div class="upload-group">
+            <label class="upload-label" for="letterhead">
+              <span class="label-badge label-badge--bg">Fundo</span>
+              Papel Timbrado
+            </label>
+            <div class="drop-zone" id="dropLetterhead" data-input="letterhead">
+              <div class="drop-inner">
+                <span class="drop-icon">📄</span>
+                <span class="drop-text">Arraste ou clique para selecionar</span>
+                <span class="drop-hint">Papel timbrado da clínica (logo, rodapé, assinatura)</span>
+              </div>
+              <input type="file" id="letterhead" name="letterhead"
+                     accept="application/pdf" class="file-input" required />
+            </div>
+            <div class="file-preview" id="previewLetterhead" hidden>
+              <span class="preview-icon">✅</span>
+              <span class="preview-name" id="nameLetterhead"></span>
+              <button type="button" class="btn-clear" data-target="letterhead" aria-label="Remover">✕</button>
+            </div>
+          </div>
+
+          <!-- Upload Zone B: Document -->
+          <div class="upload-group">
+            <label class="upload-label" for="document">
+              <span class="label-badge label-badge--fg">Conteúdo</span>
+              Documento de Resultado
+            </label>
+            <div class="drop-zone" id="dropDocument" data-input="document">
+              <div class="drop-inner">
+                <span class="drop-icon">📋</span>
+                <span class="drop-text">Arraste ou clique para selecionar</span>
+                <span class="drop-hint">Resultado do exame ou qualquer documento PDF</span>
+              </div>
+              <input type="file" id="document" name="document"
+                     accept="application/pdf" class="file-input" required />
+            </div>
+            <div class="file-preview" id="previewDocument" hidden>
+              <span class="preview-icon">✅</span>
+              <span class="preview-name" id="nameDocument"></span>
+              <button type="button" class="btn-clear" data-target="document" aria-label="Remover">✕</button>
+            </div>
+          </div>
+
+          <!-- Margin configuration (collapsible) -->
+          <details class="config-panel">
+            <summary>⚙️ Configurações de margem (avançado)</summary>
+            <div class="config-grid">
+              <div class="config-field">
+                <label for="marginLeft">Esquerda (pt)</label>
+                <input type="number" id="marginLeft" name="marginLeft" value="72" min="0" max="300" />
+                <span class="config-hint">Banda verde vertical</span>
+              </div>
+              <div class="config-field">
+                <label for="marginRight">Direita (pt)</label>
+                <input type="number" id="marginRight" name="marginRight" value="36" min="0" max="300" />
+              </div>
+              <div class="config-field">
+                <label for="marginTop">Superior (pt)</label>
+                <input type="number" id="marginTop" name="marginTop" value="85" min="0" max="300" />
+                <span class="config-hint">~3 cm do topo (padrão Di Med)</span>
+              </div>
+              <div class="config-field">
+                <label for="marginBottom">Inferior (pt)</label>
+                <input type="number" id="marginBottom" name="marginBottom" value="72" min="0" max="300" />
+                <span class="config-hint">Banda de rodapé</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-submit" id="submitBtn" disabled>
+            <span class="btn-label">Gerar Documento Timbrado</span>
+            <span class="btn-spinner" hidden></span>
+          </button>
+
+        </form>
+
+        <!-- Progress / Result area -->
+        <div id="statusArea" class="status-area" hidden>
+          <div id="progressBar" class="progress-bar" hidden>
+            <div class="progress-fill"></div>
+            <span class="progress-text">Processando…</span>
+          </div>
+          <div id="successBox" class="alert alert--success" hidden>
+            <span>✅</span>
+            <span>PDF gerado com sucesso! O download iniciou automaticamente.</span>
+          </div>
+          <div id="errorBox" class="alert alert--error" hidden>
+            <span>❌</span>
+            <span id="errorMsg"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="info-section">
+        <h3>Como funciona</h3>
+        <ol class="steps">
+          <li><strong>Upload do papel timbrado</strong> — arquivo PDF com logo, rodapé e assinatura da Di Med.</li>
+          <li><strong>Upload do resultado</strong> — qualquer PDF de exame ou laudo.</li>
+          <li><strong>Processamento automático</strong> — o sistema centraliza o resultado dentro das margens do timbrado.</li>
+          <li><strong>Download imediato</strong> — receba o PDF final pronto para impressão.</li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Di Med Centro Médico · Sistema de Automação Interna</p>
+    </footer>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

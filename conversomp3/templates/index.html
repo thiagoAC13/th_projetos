@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de MP3 para Texto</title>
+    <style>
+        /* Reset e configurações gerais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Container principal */
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        /* Cabeçalho */
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* Área de upload */
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #5568d3;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* Input de arquivo (escondido) */
+        #fileInput {
+            display: none;
+        }
+
+        /* Botão de enviar */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Área de resultado */
+        .result-area {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-title {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .result-text {
+            background: #f8f9ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* Mensagens de erro */
+        .error {
+            background: #ffe5e5;
+            border: 1px solid #ff6b6b;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Mensagens de sucesso */
+        .success {
+            background: #e5ffe5;
+            border: 1px solid #6bff6b;
+            color: #27ae60;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Nome do arquivo selecionado */
+        .file-info {
+            display: none;
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Botão de copiar */
+        .copy-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #45a049;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Conversor de Áudio para Texto</h1>
+        <p class="subtitle">Faça upload de um arquivo MP3 e converta em texto instantaneamente</p>
+
+        <!-- Mensagens de erro e sucesso -->
+        <div id="errorMessage" class="error"></div>
+        <div id="successMessage" class="success"></div>
+
+        <!-- Informações do arquivo selecionado -->
+        <div id="fileInfo" class="file-info"></div>
+
+        <!-- Área de upload -->
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Clique aqui ou arraste um arquivo</div>
+            <div class="upload-hint">Formatos aceitos: MP3, WAV, M4A, OGG (máx. 100MB)</div>
+        </div>
+
+        <!-- Input de arquivo (escondido) -->
+        <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.ogg" />
+
+        <!-- Botão de enviar -->
+        <button class="btn" id="submitBtn" disabled>Converter em Texto</button>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Processando seu áudio... Isso pode levar alguns minutos.</div>
+        </div>
+
+        <!-- Área de resultado -->
+        <div class="result-area" id="resultArea">
+            <div class="result-title">📝 Texto Transcrito:</div>
+            <div class="result-text" id="resultText"></div>
+            <button class="copy-btn" id="copyBtn">📋 Copiar Texto</button>
+        </div>
+    </div>
+
+    <script>
+        // Elementos do DOM
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const resultArea = document.getElementById('resultArea');
+        const resultText = document.getElementById('resultText');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const fileInfo = document.getElementById('fileInfo');
+        const copyBtn = document.getElementById('copyBtn');
+
+        let arquivoSelecionado = null;
+
+        // Evento de clique na área de upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Evento de drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        // Evento de seleção de arquivo
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Função para lidar com seleção de arquivo
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            
+            if (file) {
+                arquivoSelecionado = file;
+                submitBtn.disabled = false;
+                
+                // Mostrar informações do arquivo
+                fileInfo.textContent = `📄 Arquivo selecionado: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+                fileInfo.style.display = 'block';
+                
+                // Limpar mensagens anteriores
+                hideMessages();
+                resultArea.style.display = 'none';
+            }
+        }
+
+        // Evento de clique no botão de enviar
+        submitBtn.addEventListener('click', async () => {
+            if (!arquivoSelecionado) {
+                showError('Por favor, selecione um arquivo primeiro.');
+                return;
+            }
+
+            // Preparar interface para processamento
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            resultArea.style.display = 'none';
+            hideMessages();
+
+            // Criar FormData para enviar o arquivo
+            const formData = new FormData();
+            formData.append('arquivo', arquivoSelecionado);
+
+            try {
+                // Enviar requisição para o servidor
+                const response = await fetch('/transcrever', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Esconder loading
+                loading.style.display = 'none';
+
+                if (data.sucesso) {
+                    // Mostrar resultado
+                    resultText.textContent = data.transcricao;
+                    resultArea.style.display = 'block';
+                    showSuccess('Transcrição concluída com sucesso!');
+                } else {
+                    // Mostrar erro
+                    showError(data.erro || 'Erro ao processar o arquivo.');
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                // Erro de conexão
+                loading.style.display = 'none';
+                showError('Erro de conexão com o servidor. Verifique se o servidor está rodando.');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Evento de copiar texto
+        copyBtn.addEventListener('click', () => {
+            const texto = resultText.textContent;
+            navigator.clipboard.writeText(texto).then(() => {
+                const textoOriginal = copyBtn.textContent;
+                copyBtn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    copyBtn.textContent = textoOriginal;
+                }, 2000);
+            });
+        });
+
+        // Funções auxiliares para mensagens
+        function showError(message) {
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = '✅ ' + message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

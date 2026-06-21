@@ -1,0 +1,125 @@
+╔════════════════════════════════════════════════════════════════╗
+║                    GUIA RÁPIDO DE INÍCIO                       ║
+║              Conversor de Áudio para Texto                     ║
+╚════════════════════════════════════════════════════════════════╝
+
+📦 INSTALAÇÃO RÁPIDA (3 passos)
+═══════════════════════════════════════════════════════════════
+
+1️⃣  INSTALE O PYTHON
+   → Windows/Mac: https://www.python.org/downloads/
+   → Baixe versão 3.8 ou superior
+
+2️⃣  INSTALE O FFMPEG
+   → Windows: https://ffmpeg.org/download.html
+   → Mac: brew install ffmpeg
+   → Linux: sudo apt-get install ffmpeg
+
+3️⃣  INSTALE AS DEPENDÊNCIAS
+   → Abra o terminal na pasta do projeto
+   → Execute: pip install -r requirements.txt
+   ⏰ Aguarde 5-15 minutos (vai baixar ~2 GB)
+
+
+▶️  EXECUTAR A APLICAÇÃO (2 passos)
+═══════════════════════════════════════════════════════════════
+
+1️⃣  INICIE O SERVIDOR
+   → Abra terminal na pasta do projeto
+   → Execute: python app.py
+
+2️⃣  ABRA NO NAVEGADOR
+   → Acesse: http://localhost:5000
+   → Pronto! Interface está carregada
+
+
+🎯 COMO USAR
+═══════════════════════════════════════════════════════════════
+
+1. Clique na área de upload (ou arraste arquivo)
+2. Selecione um arquivo MP3/WAV/M4A/OGG
+3. Clique em "Converter em Texto"
+4. Aguarde o processamento (pode levar alguns minutos)
+5. Copie o texto transcrito
+
+
+⚠️  PROBLEMAS COMUNS
+═══════════════════════════════════════════════════════════════
+
+❌ Erro: "No module named 'flask'"
+   → Solução: pip install -r requirements.txt
+
+❌ Erro: "ffmpeg not found"
+   → Solução: Instale FFmpeg (passo 2 acima)
+
+❌ Página não carrega
+   → Solução: Verifique se executou python app.py
+   → Tente: http://127.0.0.1:5000
+
+❌ Transcrição em branco
+   → Solução: Use áudio com voz clara
+   → Tente outro arquivo de teste
+
+
+📊 FORMATOS ACEITOS
+═══════════════════════════════════════════════════════════════
+
+✅ MP3  - Formato mais comum
+✅ WAV  - Alta qualidade
+✅ M4A  - iPhone/iTunes
+✅ OGG  - Formato livre
+
+Tamanho máximo: 100 MB por arquivo
+
+
+⏱️  TEMPO DE PROCESSAMENTO
+═══════════════════════════════════════════════════════════════
+
+1 minuto de áudio = 30 seg a 2 min de processamento
+(depende do seu computador)
+
+
+🔒 PRIVACIDADE
+═══════════════════════════════════════════════════════════════
+
+✅ Tudo processado localmente
+✅ Nenhum dado enviado para servidores
+✅ Totalmente offline (após instalação)
+✅ 100% gratuito e sem limites
+
+
+💡 DICAS
+═══════════════════════════════════════════════════════════════
+
+• Use áudios com pouco ruído de fundo
+• Fale de forma clara e pausada
+• Para melhor precisão, use modelo "medium" ou "large"
+  (edite app.py, linha 26)
+• Arquivos menores processam mais rápido
+
+
+📁 ESTRUTURA DOS ARQUIVOS
+═══════════════════════════════════════════════════════════════
+
+conversor-audio/
+├── app.py              ← Código principal
+├── requirements.txt    ← Dependências
+├── templates/
+│   └── index.html     ← Interface web
+├── README.md          ← Documentação completa
+└── GUIA_RAPIDO.txt    ← Este arquivo
+
+
+📚 PRÓXIMOS PASSOS
+═══════════════════════════════════════════════════════════════
+
+1. Teste com um áudio curto primeiro
+2. Leia o README.md para instruções detalhadas
+3. Experimente diferentes tipos de áudio
+4. Personalize conforme suas necessidades
+
+
+═══════════════════════════════════════════════════════════════
+        Desenvolvido com ❤️ para iniciantes
+      Para ajuda detalhada, consulte: README.md
+═══════════════════════════════════════════════════════════════

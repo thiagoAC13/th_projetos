@@ -1,0 +1,24 @@
+# Dependências da Aplicação de Transcrição de Áudio
+# Instale com: pip install -r requirements.txt
+
+# Framework web Flask
+Flask==3.0.0
+
+# Biblioteca OpenAI Whisper para transcrição de áudio
+openai-whisper==20231117
+
+# Bibliotecas de processamento de áudio (dependências do Whisper)
+torch==2.1.2
+torchaudio==2.1.2
+
+# Biblioteca para conversão de formatos de áudio
+ffmpeg-python==0.2.0
+
+# Utilitários de segurança para upload de arquivos
+Werkzeug==3.0.1
+
+# Nota: Você também precisa ter o FFmpeg instalado no seu sistema
+# Instruções de instalação do FFmpeg:
+# - Windows: Baixe de https://ffmpeg.org/download.html
+# - macOS: brew install ffmpeg
+# - Linux: sudo apt-get install ffmpeg

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo - Pedidos</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --accent: #f472b6;
+      --success: #10b981;
+      --border: #475569;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--bg-secondary);
+      padding: 30px;
+      border-radius: 16px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 12px var(--success);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .pedidos-section {
+      background: var(--bg-secondary);
+      padding: 30px;
+      border-radius: 16px;
+      min-height: 400px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .badge {
+      background: var(--accent);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .pedidos-list {
+      display: grid;
+      gap: 15px;
+    }
+
+    .pedido-card {
+      background: var(--bg-card);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 25px;
+      transition: all 0.3s ease;
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .pedido-card.new {
+      border-color: var(--accent);
+      animation: highlight 1s ease;
+    }
+
+    @keyframes highlight {
+      0%, 100% { background: var(--bg-card); }
+      50% { background: rgba(244, 114, 182, 0.1); }
+    }
+
+    .pedido-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .pedido-id {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .pedido-time {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .items-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .item-tag {
+      background: rgba(244, 114, 182, 0.15);
+      color: var(--accent);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-concluir {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-concluir:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-concluir:active {
+      transform: translateY(0);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .empty-text {
+      font-size: 1.2rem;
+    }
+
+    .notification-toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      padding: 20px 25px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      transform: translateX(400px);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 1000;
+      min-width: 300px;
+    }
+
+    .notification-toast.show {
+      transform: translateX(0);
+    }
+
+    .toast-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .toast-icon {
+      font-size: 1.8rem;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .toast-message {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .notification-toast {
+        left: 20px;
+        right: 20px;
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>
+        <span>💻</span>
+        Painel de Pedidos
+      </h1>
+      <div class="status">
+        <div class="status-indicator"></div>
+        <span id="statusText">Conectado</span>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Pedidos Ativos</div>
+        <div class="stat-value" id="totalPedidos">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total de Itens</div>
+        <div class="stat-value" id="totalItens">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Concluídos Hoje</div>
+        <div class="stat-value" id="totalConcluidos">0</div>
+      </div>
+    </div>
+
+    <div class="pedidos-section">
+      <div class="section-header">
+        <h2 class="section-title">Pedidos Pendentes</h2>
+        <span class="badge" id="badgeCount">0</span>
+      </div>
+      
+      <div class="pedidos-list" id="pedidosList">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">Nenhum pedido no momento</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification-toast" id="notificationToast">
+    <div class="toast-header">
+      <span class="toast-icon">🔔</span>
+      <span class="toast-title">Novo Pedido!</span>
+    </div>
+    <div class="toast-message" id="toastMessage"></div>
+  </div>
+
+  <script>
+    let ws = null;
+    let pedidos = [];
+    let totalConcluidos = 0;
+
+    const itemNames = {
+      'cafe': '☕ Café',
+      'cha': '🍵 Chá',
+      'suco': '🧃 Suco',
+      'agua': '💧 Água',
+      'biscoito-doce': '🍪 Biscoito Doce',
+      'biscoito-salgado': '🥨 Biscoito Salgado',
+      'bolo': '🍰 Bolo'
+    };
+
+    // Som de notificação (beep)
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playNotificationSound() {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    // Conectar ao WebSocket
+    function connectWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+      ws.onopen = () => {
+        console.log('Conectado ao servidor');
+        document.getElementById('statusText').textContent = 'Conectado';
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'init') {
+          pedidos = data.pedidos;
+          renderPedidos();
+        } else if (data.type === 'novo_pedido') {
+          pedidos.push(data.pedido);
+          renderPedidos();
+          showNotification(data.pedido);
+          playNotificationSound();
+          highlightNewPedido(data.pedido.id);
+        } else if (data.type === 'pedido_concluido') {
+          pedidos = pedidos.filter(p => p.id !== data.id);
+          renderPedidos();
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('Desconectado do servidor');
+        document.getElementById('statusText').textContent = 'Desconectado';
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onerror = (error) => {
+        console.error('Erro no WebSocket:', error);
+      };
+    }
+
+    connectWebSocket();
+
+    // Renderizar lista de pedidos
+    function renderPedidos() {
+      const list = document.getElementById('pedidosList');
+      
+      if (pedidos.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-text">Nenhum pedido no momento</div>
+          </div>
+        `;
+      } else {
+        list.innerHTML = pedidos.map(pedido => `
+          <div class="pedido-card" data-id="${pedido.id}">
+            <div class="pedido-header">
+              <div class="pedido-id">Pedido #${pedido.id}</div>
+              <div class="pedido-time">${formatTime(pedido.timestamp)}</div>
+            </div>
+            <div class="items-list">
+              ${pedido.itens.map(item => `
+                <div class="item-tag">${itemNames[item]}</div>
+              `).join('')}
+            </div>
+            <button class="btn-concluir" onclick="concluirPedido(${pedido.id})">
+              ✓ Marcar como Pronto
+            </button>
+          </div>
+        `).join('');
+      }
+
+      updateStats();
+    }
+
+    // Atualizar estatísticas
+    function updateStats() {
+      document.getElementById('totalPedidos').textContent = pedidos.length;
+      document.getElementById('badgeCount').textContent = pedidos.length;
+      
+      const totalItens = pedidos.reduce((sum, p) => sum + p.itens.length, 0);
+      document.getElementById('totalItens').textContent = totalItens;
+      
+      document.getElementById('totalConcluidos').textContent = totalConcluidos;
+    }
+
+    // Concluir pedido
+    function concluirPedido(id) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'concluir_pedido',
+          id: id
+        }));
+        totalConcluidos++;
+      }
+    }
+
+    // Mostrar notificação
+    function showNotification(pedido) {
+      const toast = document.getElementById('notificationToast');
+      const message = document.getElementById('toastMessage');
+      
+      const itensText = pedido.itens.map(i => itemNames[i]).join(', ');
+      message.textContent = `Pedido #${pedido.id}: ${itensText}`;
+      
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
+    // Destacar novo pedido
+    function highlightNewPedido(id) {
+      setTimeout(() => {
+        const card = document.querySelector(`[data-id="${id}"]`);
+        if (card) {
+          card.classList.add('new');
+          setTimeout(() => {
+            card.classList.remove('new');
+          }, 2000);
+        }
+      }, 100);
+    }
+
+    // Formatar hora
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    }
+  </script>
+</body>
+</html>

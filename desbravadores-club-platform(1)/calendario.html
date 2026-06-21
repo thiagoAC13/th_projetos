@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário - Clube de Desbravadores</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="calendario.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" fill="#1e40af" stroke="#dc2626" stroke-width="2"/>
+                    <path d="M20 15L25 20L20 25L15 20L20 15Z" fill="#dc2626"/>
+                </svg>
+                <span class="logo-text">Desbravadores</span>
+            </div>
+            <a href="index.html" class="btn-secondary">← Voltar</a>
+        </div>
+    </header>
+
+    <main class="calendar-page">
+        <div class="container">
+            <h1>Calendário de Eventos</h1>
+            <p class="page-subtitle">Confira todos os nossos eventos e atividades</p>
+
+            <div class="events-list">
+                <div class="event-item">
+                    <div class="event-header">
+                        <div class="event-date-large">
+                            <span class="day">15</span>
+                            <span class="month">JUN</span>
+                            <span class="year">2024</span>
+                        </div>
+                        <div class="event-info">
+                            <h2>Acampamento de Verão</h2>
+                            <p class="location">Serra da Mantiqueira</p>
+                            <p class="time">09:00 - 17:00</p>
+                        </div>
+                    </div>
+                    <p class="event-desc">3 dias de aventura, trilhas e atividades ao ar livre. Uma experiência inesquecível de conexão com a natureza.</p>
+                    <button class="btn-primary">Inscrever-se</button>
+                </div>
+
+                <div class="event-item">
+                    <div class="event-header">
+                        <div class="event-date-large">
+                            <span class="day">22</span>
+                            <span class="month">JUN</span>
+                            <span class="year">2024</span>
+                        </div>
+                        <div class="event-info">
+                            <h2>Dia de Serviço Comunitário</h2>
+                            <p class="location">Centro Comunitário Local</p>
+                            <p class="time">08:00 - 14:00</p>
+                        </div>
+                    </div>
+                    <p class="event-desc">Ajudando nossa comunidade com ações solidárias. Venha fazer a diferença!</p>
+                    <button class="btn-primary">Inscrever-se</button>
+                </div>
+
+                <div class="event-item">
+                    <div class="event-header">
+                        <div class="event-date-large">
+                            <span class="day">05</span>
+                            <span class="month">JUL</span>
+                            <span class="year">2024</span>
+                        </div>
+                        <div class="event-info">
+                            <h2>Workshop de Primeiros Socorros</h2>
+                            <p class="location">Sede do Clube</p>
+                            <p class="time">14:00 - 18:00</p>
+                        </div>
+                    </div>
+                    <p class="event-desc">Aprenda habilidades essenciais para salvar vidas. Certificado incluso.</p>
+                    <button class="btn-primary">Inscrever-se</button>
+                </div>
+
+                <div class="event-item">
+                    <div class="event-header">
+                        <div class="event-date-large">
+                            <span class="day">12</span>
+                            <span class="month">JUL</span>
+                            <span class="year">2024</span>
+                        </div>
+                        <div class="event-info">
+                            <h2>Noite de Fogueira</h2>
+                            <p class="location">Parque Municipal</p>
+                            <p class="time">18:00 - 22:00</p>
+                        </div>
+                    </div>
+                    <p class="event-desc">Uma noite de histórias, músicas e confraternização ao redor da fogueira.</p>
+                    <button class="btn-primary">Inscrever-se</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

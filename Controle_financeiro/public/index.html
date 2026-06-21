@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro Pessoal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status-badge.online {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-badge.offline {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-card.receitas {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .summary-card.despesas {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .summary-card.investimentos {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .summary-card.saldo {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .summary-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .tipo-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tipo-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tipo-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .tipo-btn.active.receita {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border-color: #43e97b;
+        }
+
+        .tipo-btn.active.despesa {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-color: #f093fb;
+        }
+
+        .tipo-btn.active.investimento {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            border-color: #fa709a;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .valor-receita {
+            color: #38f9d7;
+            font-weight: bold;
+        }
+
+        .valor-despesa {
+            color: #f5576c;
+            font-weight: bold;
+        }
+
+        .valor-investimento {
+            color: #fa709a;
+            font-weight: bold;
+        }
+
+        .saldo-cell {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .saldo-positivo {
+            color: #38f9d7;
+        }
+
+        .saldo-negativo {
+            color: #f5576c;
+        }
+
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+
+        .categoria-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .instrucoes {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+        }
+
+        .instrucoes h3 {
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+
+        .instrucoes ol {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .summary-value {
+                font-size: 2em;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Controle Financeiro Pessoal</h1>
+        <p class="subtitle">Sistema com banco de dados próprio</p>
+        
+        <div style="text-align: center;">
+            <span id="statusBadge" class="status-badge offline">🔴 Conectando ao servidor...</span>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="summary">
+            <div class="summary-card receitas">
+                <div class="summary-label">Total Receitas</div>
+                <div class="summary-value" id="totalReceitas">R$ 0,00</div>
+            </div>
+            <div class="summary-card despesas">
+                <div class="summary-label">Total Despesas</div>
+                <div class="summary-value" id="totalDespesas">R$ 0,00</div>
+            </div>
+            <div class="summary-card investimentos">
+                <div class="summary-label">Total Investimentos</div>
+                <div class="summary-value" id="totalInvestimentos">R$ 0,00</div>
+            </div>
+            <div class="summary-card saldo">
+                <div class="summary-label">Saldo Disponível</div>
+                <div class="summary-value" id="saldoAtual">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>➕ Adicionar Nova Transação</h2>
+            <form id="transactionForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="data" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="descricao" placeholder="Ex: Salário, Almoço, Uber..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="categoria" required>
+                            <option value="">Selecione...</option>
+                            <optgroup label="Receitas">
+                                <option value="Salário">💼 Salário</option>
+                                <option value="Freelance">💻 Freelance</option>
+                                <option value="Rendimentos">💵 Rendimentos de Investimentos</option>
+                                <option value="Outras Receitas">💰 Outras Receitas</option>
+                            </optgroup>
+                            <optgroup label="Despesas">
+                                <option value="Alimentação">🍔 Alimentação</option>
+                                <option value="Transporte">🚗 Transporte</option>
+                                <option value="Moradia">🏠 Moradia</option>
+                                <option value="Saúde">⚕️ Saúde</option>
+                                <option value="Educação">📚 Educação</option>
+                                <option value="Lazer">🎮 Lazer</option>
+                                <option value="Compras">🛒 Compras</option>
+                                <option value="Contas">📄 Contas</option>
+                                <option value="Outras Despesas">💸 Outras Despesas</option>
+                            </optgroup>
+                            <optgroup label="Investimentos">
+                                <option value="Ações">📈 Ações</option>
+                                <option value="Fundos Imobiliários">🏢 Fundos Imobiliários (FIIs)</option>
+                                <option value="Tesouro Direto">🏛️ Tesouro Direto</option>
+                                <option value="CDB/LCI/LCA">🏦 CDB / LCI / LCA</option>
+                                <option value="Previdência Privada">👴 Previdência Privada</option>
+                                <option value="Criptomoedas">₿ Criptomoedas</option>
+                                <option value="Poupança">🐷 Poupança</option>
+                                <option value="Outros Investimentos">💎 Outros Investimentos</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" id="valor" placeholder="0,00" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Tipo de Transação</label>
+                    <div class="tipo-buttons">
+                        <button type="button" class="tipo-btn receita" onclick="selectTipo('receita')">
+                            ⬆️ Receita
+                        </button>
+                        <button type="button" class="tipo-btn despesa" onclick="selectTipo('despesa')">
+                            ⬇️ Despesa
+                        </button>
+                        <button type="button" class="tipo-btn investimento" onclick="selectTipo('investimento')">
+                            💰 Investimento
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="add-btn" id="submitBtn">Adicionar Transação</button>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Receita</th>
+                        <th>Despesa</th>
+                        <th>Investimento</th>
+                        <th>Saldo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsBody">
+                    <tr>
+                        <td colspan="8" class="loading">
+                            ⏳ Carregando dados...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="instrucoes">
+            <h3>📖 Como Usar Este Sistema</h3>
+            <ol>
+                <li><strong>Servidor Backend:</strong> O sistema agora usa um banco de dados SQLite próprio rodando em Node.js</li>
+                <li><strong>Dados Persistentes:</strong> Todas as transações são salvas no arquivo financeiro.db</li>
+                <li><strong>Três Tipos de Transação:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li><strong>Receita:</strong> Dinheiro que entra (salário, freelance, etc.) - aumenta o saldo</li>
+                        <li><strong>Despesa:</strong> Dinheiro que sai (contas, compras, etc.) - diminui o saldo</li>
+                        <li><strong>Investimento:</strong> Dinheiro aplicado (ações, fundos, etc.) - <em>não afeta o saldo disponível</em></li>
+                    </ul>
+                </li>
+                <li><strong>Saldo Disponível:</strong> É calculado como Receitas - Despesas (investimentos são contabilizados separadamente)</li>
+                <li><strong>API REST:</strong> O frontend se comunica com o backend através de requisições HTTP</li>
+                <li><strong>Offline/Online:</strong> Veja o status da conexão no badge acima</li>
+            </ol>
+
+            <div class="data-info">
+                💾 <strong>Salvamento Automático:</strong> Todos os seus dados são salvos automaticamente no banco de dados do servidor e permanecerão seguros!
+            </div>
+
+            <div class="data-controls">
+                <button class="data-btn" onclick="exportData()" id="exportBtn">📥 Exportar Dados</button>
+                <button class="data-btn" onclick="importData()" id="importBtn">📤 Importar Dados</button>
+                <button class="data-btn danger" onclick="clearAllData()" id="clearBtn">🗑️ Limpar Todos os Dados</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let selectedTipo = null;
+        let isServerOnline = false;
+
+        // Define data atual
+        document.getElementById('data').valueAsDate = new Date();
+
+        // Verifica conexão com servidor
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_URL}/transactions`);
+                isServerOnline = response.ok;
+                updateStatusBadge(true);
+                return true;
+            } catch (error) {
+                isServerOnline = false;
+                updateStatusBadge(false);
+                return false;
+            }
+        }
+
+        function updateStatusBadge(online) {
+            const badge = document.getElementById('statusBadge');
+            if (online) {
+                badge.className = 'status-badge online';
+                badge.textContent = '🟢 Servidor Online';
+            } else {
+                badge.className = 'status-badge offline';
+                badge.textContent = '🔴 Servidor Offline';
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        function selectTipo(tipo) {
+            selectedTipo = tipo;
+            document.querySelectorAll('.tipo-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.tipo-btn').classList.add('active');
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        function getCategoryColor(categoria) {
+            const colors = {
+                'Salário': '#4facfe',
+                'Freelance': '#43e97b',
+                'Rendimentos': '#fa709a',
+                'Outras Receitas': '#30cfd0',
+                'Alimentação': '#f093fb',
+                'Transporte': '#4facfe',
+                'Moradia': '#fa709a',
+                'Saúde': '#f5576c',
+                'Educação': '#667eea',
+                'Lazer': '#764ba2',
+                'Compras': '#43e97b',
+                'Contas': '#fee140',
+                'Outras Despesas': '#30cfd0',
+                'Ações': '#fa709a',
+                'Fundos Imobiliários': '#fee140',
+                'Tesouro Direto': '#4facfe',
+                'CDB/LCI/LCA': '#43e97b',
+                'Previdência Privada': '#764ba2',
+                'Criptomoedas': '#f093fb',
+                'Poupança': '#38f9d7',
+                'Outros Investimentos': '#667eea'
+            };
+            return colors[categoria] || '#999';
+        }
+
+        // Carregar transações do banco
+        async function loadTransactions() {
+            try {
+                const response = await fetch(`${API_URL}/transactions`);
+                if (!response.ok) throw new Error('Erro ao carregar transações');
+                
+                const transactions = await response.json();
+                renderTransactions(transactions);
+                updateSummary();
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao carregar transações. Verifique se o servidor está rodando.', 'error');
+                document.getElementById('transactionsBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            ❌ Erro ao conectar com o servidor.<br>
+                            <small>Certifique-se de que o backend está rodando em http://localhost:3000</small>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Atualizar resumo
+        async function updateSummary() {
+            try {
+                const response = await fetch(`${API_URL}/summary`);
+                if (!response.ok) throw new Error('Erro ao carregar resumo');
+                
+                const summary = await response.json();
+                
+                document.getElementById('totalReceitas').textContent = formatCurrency(summary.totalReceitas);
+                document.getElementById('totalDespesas').textContent = formatCurrency(summary.totalDespesas);
+                document.getElementById('totalInvestimentos').textContent = formatCurrency(summary.totalInvestimentos);
+                document.getElementById('saldoAtual').textContent = formatCurrency(summary.saldo);
+                
+                const saldoCard = document.querySelector('.summary-card.saldo');
+                if (summary.saldo < 0) {
+                    saldoCard.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+                } else {
+                    saldoCard.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar resumo:', error);
+            }
+        }
+
+        function renderTransactions(transactions) {
+            const tbody = document.getElementById('transactionsBody');
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            📋 Nenhuma transação registrada ainda.<br>
+                            <small>Adicione sua primeira transação acima!</small>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let saldoAcumulado = 0;
+            tbody.innerHTML = transactions.map(t => {
+                if (t.tipo === 'receita') {
+                    saldoAcumulado += t.valor;
+                } else if (t.tipo === 'despesa') {
+                    saldoAcumulado -= t.valor;
+                }
+                // Investimentos não alteram o saldo disponível
+
+                const saldoClass = saldoAcumulado >= 0 ? 'saldo-positivo' : 'saldo-negativo';
+                const categoryColor = getCategoryColor(t.categoria);
+
+                return `
+                    <tr>
+                        <td>${new Date(t.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+                        <td>${t.descricao}</td>
+                        <td>
+                            <span class="categoria-badge" style="background: ${categoryColor}20; color: ${categoryColor}; border: 1px solid ${categoryColor};">
+                                ${t.categoria}
+                            </span>
+                        </td>
+                        <td class="valor-receita">
+                            ${t.tipo === 'receita' ? formatCurrency(t.valor) : '-'}
+                        </td>
+                        <td class="valor-despesa">
+                            ${t.tipo === 'despesa' ? formatCurrency(t.valor) : '-'}
+                        </td>
+                        <td class="valor-investimento">
+                            ${t.tipo === 'investimento' ? formatCurrency(t.valor) : '-'}
+                        </td>
+                        <td class="saldo-cell ${saldoClass}">
+                            ${formatCurrency(saldoAcumulado)}
+                        </td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteTransaction(${t.id})">
+                                🗑️ Excluir
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Deletar transação
+        async function deleteTransaction(id) {
+            if (!confirm('Tem certeza que deseja excluir esta transação?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/transactions/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Erro ao deletar');
+                
+                showAlert('Transação excluída com sucesso!', 'success');
+                loadTransactions();
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao excluir transação', 'error');
+            }
+        }
+
+        // Adicionar transação
+        document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!selectedTipo) {
+                alert('Por favor, selecione o tipo de transação (Receita, Despesa ou Investimento)');
+                return;
+            }
+
+            if (!isServerOnline) {
+                alert('Servidor offline. Não é possível adicionar transações.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Salvando...';
+
+            const transaction = {
+                data: document.getElementById('data').value,
+                descricao: document.getElementById('descricao').value,
+                categoria: document.getElementById('categoria').value,
+                valor: parseFloat(document.getElementById('valor').value),
+                tipo: selectedTipo
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/transactions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(transaction)
+                });
+
+                if (!response.ok) throw new Error('Erro ao salvar');
+
+                showAlert('Transação adicionada com sucesso!', 'success');
+                
+                // Limpa formulário
+                this.reset();
+                document.getElementById('data').valueAsDate = new Date();
+                selectedTipo = null;
+                document.querySelectorAll('.tipo-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Recarrega dados
+                loadTransactions();
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao adicionar transação', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Adicionar Transação';
+            }
+        });
+
+        // Inicialização
+        checkServerStatus().then(online => {
+            if (online) {
+                loadTransactions();
+            }
+        });
+
+        // Verifica status a cada 30 segundos
+        setInterval(checkServerStatus, 30000);
+
+        // ==================== EXPORTAR/IMPORTAR DADOS ====================
+
+        // Exportar dados como arquivo JSON
+        async function exportData() {
+            if (!isServerOnline) {
+                alert('Servidor offline. Não é possível exportar dados.');
+                return;
+            }
+
+            const exportBtn = document.getElementById('exportBtn');
+            exportBtn.disabled = true;
+            exportBtn.textContent = '⏳ Exportando...';
+
+            try {
+                const response = await fetch(`${API_URL}/transactions`);
+                if (!response.ok) throw new Error('Erro ao buscar dados');
+                
+                const transactions = await response.json();
+
+                if (transactions.length === 0) {
+                    alert('Não há dados para exportar!');
+                    return;
+                }
+
+                const dataStr = JSON.stringify(transactions, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `controle-financeiro-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                showAlert(`✅ ${transactions.length} transações exportadas com sucesso!`, 'success');
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('❌ Erro ao exportar dados', 'error');
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📥 Exportar Dados';
+            }
+        }
+
+        // Importar dados de arquivo JSON
+        async function importData() {
+            if (!isServerOnline) {
+                alert('Servidor offline. Não é possível importar dados.');
+                return;
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const importBtn = document.getElementById('importBtn');
+                importBtn.disabled = true;
+                importBtn.textContent = '⏳ Importando...';
+
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        
+                        if (!Array.isArray(importedData)) {
+                            throw new Error('Formato inválido');
+                        }
+
+                        const confirm = window.confirm(
+                            `Encontradas ${importedData.length} transações no arquivo.\n\n` +
+                            'Deseja importar estes dados?\n' +
+                            '(Serão adicionados aos dados existentes)'
+                        );
+
+                        if (!confirm) {
+                            importBtn.disabled = false;
+                            importBtn.textContent = '📤 Importar Dados';
+                            return;
+                        }
+
+                        // Importar cada transação
+                        let successCount = 0;
+                        let errorCount = 0;
+
+                        for (const transaction of importedData) {
+                            // Remove o ID para criar nova transação
+                            const { id, created_at, ...transactionData } = transaction;
+                            
+                            try {
+                                const response = await fetch(`${API_URL}/transactions`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(transactionData)
+                                });
+
+                                if (response.ok) {
+                                    successCount++;
+                                } else {
+                                    errorCount++;
+                                }
+                            } catch (err) {
+                                errorCount++;
+                                console.error('Erro ao importar transação:', err);
+                            }
+                        }
+
+                        if (successCount > 0) {
+                            showAlert(
+                                `✅ ${successCount} transações importadas com sucesso!` + 
+                                (errorCount > 0 ? ` (${errorCount} com erro)` : ''), 
+                                'success'
+                            );
+                            loadTransactions();
+                        } else {
+                            showAlert('❌ Nenhuma transação foi importada', 'error');
+                        }
+
+                    } catch (error) {
+                        console.error('Erro:', error);
+                        showAlert('❌ Erro ao importar dados. Verifique se o arquivo está correto.', 'error');
+                    } finally {
+                        importBtn.disabled = false;
+                        importBtn.textContent = '📤 Importar Dados';
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // Limpar todos os dados
+        async function clearAllData() {
+            if (!isServerOnline) {
+                alert('Servidor offline. Não é possível limpar dados.');
+                return;
+            }
+
+            try {
+                // Primeiro busca quantas transações existem
+                const response = await fetch(`${API_URL}/transactions`);
+                const transactions = await response.json();
+
+                if (transactions.length === 0) {
+                    alert('Não há dados para limpar!');
+                    return;
+                }
+
+                const confirm = window.confirm(
+                    '⚠️ ATENÇÃO: Esta ação irá apagar TODAS as suas transações do banco de dados!\n\n' +
+                    `Você tem ${transactions.length} transações registradas.\n\n` +
+                    'Deseja realmente continuar?'
+                );
+
+                if (!confirm) return;
+
+                const doubleConfirm = window.confirm(
+                    '🚨 ÚLTIMA CONFIRMAÇÃO:\n\n' +
+                    'Tem CERTEZA ABSOLUTA que deseja apagar tudo?\n' +
+                    'Esta ação não pode ser desfeita!\n\n' +
+                    '💡 Dica: Você pode exportar os dados antes de apagar.'
+                );
+
+                if (!doubleConfirm) return;
+
+                const clearBtn = document.getElementById('clearBtn');
+                clearBtn.disabled = true;
+                clearBtn.textContent = '⏳ Apagando...';
+
+                // Deleta todas as transações
+                const deleteResponse = await fetch(`${API_URL}/transactions`, {
+                    method: 'DELETE'
+                });
+
+                if (!deleteResponse.ok) throw new Error('Erro ao deletar');
+
+                showAlert('✅ Todos os dados foram apagados do banco de dados.', 'success');
+                loadTransactions();
+
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('❌ Erro ao limpar dados', 'error');
+            } finally {
+                const clearBtn = document.getElementById('clearBtn');
+                clearBtn.disabled = false;
+                clearBtn.textContent = '🗑️ Limpar Todos os Dados';
+            }
+        }
+    </script>
+</body>
+</html>

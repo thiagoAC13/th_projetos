@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>As 7 Igrejas do Apocalipse - Jogo Educativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-wrapper {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .ranking-panel {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        }
+
+        .ranking-title {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .ranking-list {
+            list-style: none;
+        }
+
+        .ranking-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .ranking-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .ranking-item.first {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 3px solid #DAA520;
+        }
+
+        .ranking-item.second {
+            background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
+            border: 3px solid #999;
+        }
+
+        .ranking-item.third {
+            background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+            border: 3px solid #8B4513;
+        }
+
+        .rank-position {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .ranking-item.first .rank-position {
+            background: #FFD700;
+            color: #000;
+            font-size: 1.2em;
+        }
+
+        .ranking-item.second .rank-position {
+            background: #C0C0C0;
+            color: #000;
+        }
+
+        .ranking-item.third .rank-position {
+            background: #CD7F32;
+            color: #fff;
+        }
+
+        .rank-name {
+            font-weight: 700;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .rank-stats {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .rank-time {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .rank-attempts {
+            color: #f45c43;
+            font-weight: 600;
+        }
+
+        .player-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .player-name-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            text-align: center;
+            margin-bottom: 10px;
+            outline: none;
+        }
+
+        .start-game-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-game-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .game-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .welcome-modal {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .welcome-modal h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .welcome-modal p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .clear-ranking-btn {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .clear-ranking-btn:hover {
+            opacity: 0.9;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .game-area {
+            display: grid;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #444;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .churches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .church-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #333;
+            user-select: none;
+            position: relative;
+        }
+
+        .church-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        .church-card.selected {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .church-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .answer-zone {
+            background: #f8f9fa;
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .answer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .answer-slot {
+            background: white;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .answer-slot.drag-over {
+            background: #e8eaf6;
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .answer-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: grab;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .answer-card:hover {
+            transform: scale(1.05);
+        }
+
+        .answer-card.correct {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            animation: pulse 0.5s ease;
+        }
+
+        .answer-card.incorrect {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .change-player-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+            display: block;
+        }
+
+        .empty-slot-text {
+            color: #999;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .churches-grid, .answer-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .ranking-panel {
+                position: static;
+                max-height: none;
+                margin-top: 20px;
+            }
+
+            .game-stats {
+                gap: 15px;
+            }
+
+            .stat-box {
+                min-width: 120px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal de Boas-Vindas -->
+    <div class="game-overlay" id="welcomeOverlay">
+        <div class="welcome-modal">
+            <h2>🏛️ Bem-vindo, Desbravador!</h2>
+            <p>Digite seu nome para começar o desafio das 7 Igrejas do Apocalipse</p>
+            <input type="text" 
+                   class="player-name-input" 
+                   id="playerNameInput" 
+                   placeholder="Seu nome aqui..."
+                   maxlength="30">
+            <button class="start-game-btn" onclick="startGame()">🎮 Começar Jogo</button>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <!-- Área Principal do Jogo -->
+        <div class="container" id="gameContainer">
+            <header>
+                <h1>🏛️ As 7 Igrejas do Apocalipse</h1>
+                <p class="subtitle">Identifique as 7 igrejas mencionadas no livro de Apocalipse</p>
+            </header>
+
+            <!-- Informações do Jogador -->
+            <div class="player-info">
+                <h3>Desbravador: <span id="currentPlayerName"></span></h3>
+            </div>
+
+            <!-- Estatísticas do Jogo -->
+            <div class="game-stats">
+                <div class="stat-box">
+                    <div class="stat-label">⏱️ Tempo</div>
+                    <div class="stat-value" id="timer">00:00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">🔄 Tentativas</div>
+                    <div class="stat-value" id="attempts">0</div>
+                </div>
+            </div>
+
+        <div class="game-area">
+            <div>
+                <h2 class="section-title">📋 Selecione as igrejas (clique ou arraste):</h2>
+                <div class="churches-grid" id="churchesGrid"></div>
+            </div>
+
+            <div>
+                <h2 class="section-title">✅ Suas escolhas (7 igrejas):</h2>
+                <div class="answer-zone">
+                    <div class="answer-grid" id="answerGrid">
+                        <div class="answer-slot" data-slot="0"><span class="empty-slot-text">Arraste aqui</span></div>
+                        <div class="answer-slot" data-slot="1"><span class="empty-slot-text">Arraste aqui</span></div>
+                        <div class="answer-slot" data-slot="2"><span class="empty-slot-text">Arraste aqui</span></div>
+                        <div class="answer-slot" data-slot="3"><span class="empty-slot-text">Arraste aqui</span></div>
+                        <div class="answer-slot" data-slot="4"><span class="empty-slot-text">Arraste aqui</span></div>
+                        <div class="answer-slot" data-slot="5"><span class="empty-slot-text">Arraste aqui</span></div>
+                        <div class="answer-slot" data-slot="6"><span class="empty-slot-text">Arraste aqui</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="checkBtn" onclick="checkAnswers()">🔍 Verificar Respostas</button>
+            <button class="reset-btn" onclick="tryAgain()">🔄 Tentar de Novo</button>
+            <button class="change-player-btn" onclick="changePlayer()">👤 Trocar Jogador</button>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- Painel de Ranking -->
+    <div class="ranking-panel">
+        <h2 class="ranking-title">🏆 Ranking dos Desbravadores</h2>
+        <ul class="ranking-list" id="rankingList">
+            <li style="text-align: center; color: #999; padding: 20px;">
+                Nenhum desbravador completou ainda...
+            </li>
+        </ul>
+        <button class="clear-ranking-btn" onclick="clearRanking()">🗑️ Limpar Ranking</button>
+    </div>
+</div>
+
+    <script>
+        // As 7 igrejas verdadeiras do Apocalipse
+        const correctChurches = [
+            'Éfeso',
+            'Esmirna',
+            'Pérgamo',
+            'Tiatira',
+            'Sardes',
+            'Filadélfia',
+            'Laodiceia'
+        ];
+
+        // Igrejas fictícias plausíveis
+        const fakeChurches = [
+            'Corinto',
+            'Antioquia',
+            'Tessalônica',
+            'Colossos',
+            'Beréia',
+            'Cesareia',
+            'Galácia'
+        ];
+
+        let allChurches = [];
+        let selectedChurches = [];
+        let draggedElement = null;
+        let playerName = '';
+        let startTime = null;
+        let timerInterval = null;
+        let attempts = 0;
+        let gameCompleted = false;
+
+        // Inicializar o jogo
+        function initGame() {
+            allChurches = [...correctChurches, ...fakeChurches];
+            shuffleArray(allChurches);
+            selectedChurches = new Array(7).fill(null);
+            attempts = 0;
+            gameCompleted = false;
+            updateAttempts();
+            renderChurches();
+            clearMessage();
+            loadRanking();
+        }
+
+        // Começar o jogo
+        function startGame() {
+            const nameInput = document.getElementById('playerNameInput');
+            playerName = nameInput.value.trim();
+
+            if (!playerName) {
+                alert('Por favor, digite seu nome!');
+                return;
+            }
+
+            document.getElementById('welcomeOverlay').classList.add('hidden');
+            document.getElementById('currentPlayerName').textContent = playerName;
+            
+            startTime = Date.now();
+            startTimer();
+            initGame();
+        }
+
+        // Cronômetro
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!gameCompleted) {
+                    const elapsed = Date.now() - startTime;
+                    const seconds = Math.floor(elapsed / 1000);
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    document.getElementById('timer').textContent = 
+                        `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function getElapsedTime() {
+            return Math.floor((Date.now() - startTime) / 1000);
+        }
+
+        // Atualizar tentativas
+        function updateAttempts() {
+            document.getElementById('attempts').textContent = attempts;
+        }
+
+        // Embaralhar array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Renderizar as igrejas disponíveis
+        function renderChurches() {
+            const grid = document.getElementById('churchesGrid');
+            grid.innerHTML = '';
+
+            allChurches.forEach((church, index) => {
+                const card = document.createElement('div');
+                card.className = 'church-card';
+                card.textContent = church;
+                card.draggable = true;
+                card.dataset.church = church;
+                card.dataset.index = index;
+
+                // Eventos de arrastar
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+
+                // Evento de clique para mobile e alternativa
+                card.addEventListener('click', handleClick);
+
+                // Verificar se já está selecionada
+                if (selectedChurches.includes(church)) {
+                    card.classList.add('selected');
+                }
+
+                grid.appendChild(card);
+            });
+
+            renderAnswerZone();
+        }
+
+        // Renderizar zona de respostas
+        function renderAnswerZone() {
+            const slots = document.querySelectorAll('.answer-slot');
+            slots.forEach((slot, index) => {
+                slot.innerHTML = '';
+                
+                if (selectedChurches[index]) {
+                    const card = document.createElement('div');
+                    card.className = 'answer-card';
+                    card.textContent = selectedChurches[index];
+                    card.dataset.church = selectedChurches[index];
+                    card.dataset.slot = index;
+                    card.draggable = true;
+
+                    card.addEventListener('dragstart', handleAnswerDragStart);
+                    card.addEventListener('click', () => removeFromAnswer(index));
+
+                    slot.appendChild(card);
+                } else {
+                    const emptyText = document.createElement('span');
+                    emptyText.className = 'empty-slot-text';
+                    emptyText.textContent = 'Arraste aqui';
+                    slot.appendChild(emptyText);
+                }
+
+                // Eventos de drop
+                slot.addEventListener('dragover', handleDragOver);
+                slot.addEventListener('drop', handleDrop);
+                slot.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        // Handlers de drag and drop
+        function handleDragStart(e) {
+            if (e.target.classList.contains('selected')) {
+                e.preventDefault();
+                return;
+            }
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleAnswerDragStart(e) {
+            draggedElement = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (!e.currentTarget.querySelector('.answer-card')) {
+                e.currentTarget.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            if (!draggedElement) return;
+
+            const slotIndex = parseInt(e.currentTarget.dataset.slot);
+            const church = draggedElement.dataset.church;
+
+            // Se está vindo da zona de respostas
+            if (draggedElement.classList.contains('answer-card')) {
+                const oldSlot = parseInt(draggedElement.dataset.slot);
+                selectedChurches[oldSlot] = null;
+            }
+
+            // Se o slot já está ocupado, não fazer nada
+            if (selectedChurches[slotIndex]) {
+                renderChurches();
+                return;
+            }
+
+            selectedChurches[slotIndex] = church;
+            renderChurches();
+            clearMessage();
+        }
+
+        // Handler de clique (alternativa ao drag and drop)
+        function handleClick(e) {
+            if (e.target.classList.contains('selected')) return;
+
+            const church = e.target.dataset.church;
+            const emptySlot = selectedChurches.findIndex(slot => slot === null);
+
+            if (emptySlot !== -1) {
+                selectedChurches[emptySlot] = church;
+                renderChurches();
+                clearMessage();
+            }
+        }
+
+        // Remover da zona de respostas
+        function removeFromAnswer(index) {
+            selectedChurches[index] = null;
+            renderChurches();
+            clearMessage();
+        }
+
+        // Verificar respostas
+        function checkAnswers() {
+            if (gameCompleted) {
+                showMessage('Você já completou o jogo! Clique em "Recomeçar" para jogar novamente.', 'info');
+                return;
+            }
+
+            const filledSlots = selectedChurches.filter(church => church !== null);
+            
+            if (filledSlots.length < 7) {
+                showMessage('Por favor, selecione 7 igrejas antes de verificar!', 'info');
+                return;
+            }
+
+            attempts++;
+            updateAttempts();
+
+            let correctCount = 0;
+            const slots = document.querySelectorAll('.answer-slot');
+
+            slots.forEach((slot, index) => {
+                const card = slot.querySelector('.answer-card');
+                if (card) {
+                    card.classList.remove('correct', 'incorrect');
+                    
+                    if (correctChurches.includes(selectedChurches[index])) {
+                        card.classList.add('correct');
+                        correctCount++;
+                    } else {
+                        card.classList.add('incorrect');
+                    }
+                }
+            });
+
+            if (correctCount === 7) {
+                gameCompleted = true;
+                stopTimer();
+                const finalTime = getElapsedTime();
+                saveScore(playerName, finalTime, attempts);
+                showMessage('🎉 Parabéns! Você acertou todas as 7 igrejas do Apocalipse!', 'success');
+                loadRanking();
+            } else {
+                showMessage(`Você acertou ${correctCount} de 7 igrejas. Continue tentando! 💪`, 'error');
+            }
+        }
+
+        // Tentar de novo (mantém tentativas e cronômetro)
+        function tryAgain() {
+            if (gameCompleted) {
+                showMessage('Você já completou o jogo! Clique em "Trocar Jogador" para o próximo desbravador.', 'info');
+                return;
+            }
+            
+            if (confirm('Deseja limpar suas escolhas e tentar de novo? O cronômetro e as tentativas continuarão contando.')) {
+                selectedChurches = new Array(7).fill(null);
+                renderChurches();
+                clearMessage();
+            }
+        }
+
+        // Trocar de jogador
+        function changePlayer() {
+            const confirmMsg = gameCompleted 
+                ? 'Deseja trocar de jogador? Todos os dados no ranking serão mantidos.' 
+                : 'Deseja trocar de jogador? O progresso atual será perdido, mas todos os dados no ranking serão mantidos.';
+            
+            if (confirm(confirmMsg)) {
+                stopTimer();
+                // Resetar todas as variáveis
+                selectedChurches = new Array(7).fill(null);
+                shuffleArray(allChurches);
+                attempts = 0;
+                gameCompleted = false;
+                playerName = '';
+                startTime = null;
+                updateAttempts();
+                clearMessage();
+                
+                // Limpar o display do timer
+                document.getElementById('timer').textContent = '00:00';
+                
+                // Mostrar o modal de boas-vindas novamente
+                document.getElementById('welcomeOverlay').classList.remove('hidden');
+                document.getElementById('playerNameInput').value = '';
+                document.getElementById('playerNameInput').focus();
+            }
+        }
+
+        // Sistema de Ranking - LocalStorage
+        function saveScore(name, time, attempts) {
+            let ranking = JSON.parse(localStorage.getItem('churchesRanking') || '[]');
+            
+            ranking.push({
+                name: name,
+                time: time,
+                attempts: attempts,
+                date: new Date().toISOString()
+            });
+
+            // Ordenar por tentativas (menor primeiro), depois por tempo (menor primeiro)
+            ranking.sort((a, b) => {
+                if (a.attempts !== b.attempts) {
+                    return a.attempts - b.attempts;
+                }
+                return a.time - b.time;
+            });
+
+            // Manter apenas os 30 melhores
+            ranking = ranking.slice(0, 30);
+
+            localStorage.setItem('churchesRanking', JSON.stringify(ranking));
+        }
+
+        function loadRanking() {
+            const ranking = JSON.parse(localStorage.getItem('churchesRanking') || '[]');
+            const rankingList = document.getElementById('rankingList');
+
+            if (ranking.length === 0) {
+                rankingList.innerHTML = `
+                    <li style="text-align: center; color: #999; padding: 20px;">
+                        Nenhum desbravador completou ainda...
+                    </li>
+                `;
+                return;
+            }
+
+            rankingList.innerHTML = '';
+            ranking.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.className = 'ranking-item';
+                
+                if (index === 0) li.classList.add('first');
+                else if (index === 1) li.classList.add('second');
+                else if (index === 2) li.classList.add('third');
+
+                const minutes = Math.floor(entry.time / 60);
+                const seconds = entry.time % 60;
+                const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                li.innerHTML = `
+                    <span class="rank-position">${index + 1}</span>
+                    <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+                        <span class="rank-name">${entry.name}</span>
+                        <div class="rank-stats">
+                            <span class="rank-time">⏱️ ${timeStr}</span> | 
+                            <span class="rank-attempts">🔄 ${entry.attempts} tentativa${entry.attempts > 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                `;
+
+                rankingList.appendChild(li);
+            });
+        }
+
+        function clearRanking() {
+            if (confirm('Tem certeza que deseja limpar todo o ranking? Esta ação não pode ser desfeita!')) {
+                localStorage.removeItem('churchesRanking');
+                loadRanking();
+                alert('Ranking limpo com sucesso!');
+            }
+        }
+
+        // Mostrar mensagem
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = 'message ' + type;
+        }
+
+        // Limpar mensagem
+        function clearMessage() {
+            const message = document.getElementById('message');
+            message.className = 'message';
+            message.textContent = '';
+        }
+
+        // Inicializar ao carregar
+        window.addEventListener('load', () => {
+            loadRanking();
+            
+            // Permitir Enter no input do nome
+            document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    startGame();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

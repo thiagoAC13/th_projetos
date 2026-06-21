@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Animes - PostgreSQL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .api-status {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .api-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .api-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .add-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group select {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 3px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(3px);
+        }
+
+        .tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .anime-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .anime-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .anime-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .anime-card.favorite::before {
+            content: '⭐';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            z-index: 10;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .anime-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .anime-info {
+            padding: 15px;
+        }
+
+        .anime-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            min-height: 50px;
+        }
+
+        .anime-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-acompanhando {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-visto {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .status-futuro {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .anime-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 13px;
+            flex: 1;
+            min-width: 60px;
+        }
+
+        .btn-edit {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #0056b3;
+        }
+
+        .btn-favorite {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-favorite:hover {
+            background: #e0a800;
+        }
+
+        .btn-favorite.active {
+            background: #ff9800;
+        }
+
+        .btn-status {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-status:hover {
+            background: #5a6268;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .anime-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .filter-group select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎌 Minha Lista de Animes</h1>
+        <div id="apiStatus" class="api-status disconnected">🔴 Conectando ao servidor...</div>
+
+        <!-- Formulário de Adição -->
+        <div class="add-form">
+            <h2 style="margin-bottom: 20px; color: #333;">Adicionar Novo Anime</h2>
+            <div class="form-group">
+                <label for="animeName">Nome do Anime *</label>
+                <input type="text" id="animeName" placeholder="Ex: Attack on Titan">
+            </div>
+            <div class="form-group">
+                <label for="animeImage">Imagem do Anime *</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button type="button" class="btn btn-secondary" onclick="toggleImageMode()" style="padding: 8px 16px;">
+                        <span id="modeToggleText">📁 Usar Arquivo Local</span>
+                    </button>
+                </div>
+                <input type="url" id="animeImageURL" placeholder="https://exemplo.com/imagem.jpg" style="display: block;">
+                <input type="file" id="animeImageFile" accept="image/*" style="display: none;">
+                <div id="imagePreview" style="margin-top: 10px; display: none;">
+                    <img id="previewImg" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="animeStatus">Status</label>
+                <select id="animeStatus">
+                    <option value="acompanhando">Acompanhando</option>
+                    <option value="visto">Já Visto</option>
+                    <option value="futuro">Assistir Futuramente</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="addButton" onclick="addAnime()">Adicionar Anime</button>
+        </div>
+
+        <!-- Controles de Busca e Filtro -->
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar anime..." onkeyup="filterAnimes()">
+            </div>
+            <div class="filter-group">
+                <label for="filterStatus">Filtrar:</label>
+                <select id="filterStatus" onchange="filterAnimes()">
+                    <option value="all">Todos os Status</option>
+                    <option value="acompanhando">Acompanhando</option>
+                    <option value="visto">Já Visto</option>
+                    <option value="futuro">Assistir Futuramente</option>
+                    <option value="favoritos">Apenas Favoritos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sortBy">Ordenar:</label>
+                <select id="sortBy" onchange="filterAnimes()">
+                    <option value="recent">Mais Recentes</option>
+                    <option value="favorites">Favoritos Primeiro</option>
+                    <option value="name">Nome (A-Z)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Abas de Categorias -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('all')">Todos</button>
+            <button class="tab" onclick="switchTab('acompanhando')">Acompanhando</button>
+            <button class="tab" onclick="switchTab('visto')">Já Visto</button>
+            <button class="tab" onclick="switchTab('futuro')">Assistir Futuramente</button>
+            <button class="tab" onclick="switchTab('favoritos')">⭐ Favoritos</button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading">Carregando animes...</div>
+
+        <!-- Grid de Animes -->
+        <div id="animeGrid" class="anime-grid" style="display: none;"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM13.5 11.5l-2.25 3.01L9.5 12.5 7 16h10z"/>
+            </svg>
+            <h2>Nenhum anime encontrado</h2>
+            <p>Adicione seu primeiro anime acima!</p>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Editar Anime</div>
+            <div class="form-group">
+                <label for="editName">Nome do Anime</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-group">
+                <label for="editImage">Imagem do Anime</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button type="button" class="btn btn-secondary" onclick="toggleEditImageMode()" style="padding: 8px 16px;">
+                        <span id="editModeToggleText">📁 Usar Arquivo Local</span>
+                    </button>
+                </div>
+                <input type="url" id="editImageURL" style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; width: 100%; display: block;">
+                <input type="file" id="editImageFile" accept="image/*" style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; width: 100%; display: none;">
+                <div id="editImagePreview" style="margin-top: 10px; display: none;">
+                    <img id="editPreviewImg" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveEdit()">Salvar</button>
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração da API
+        const API_URL = 'http://localhost:3000/api';
+
+        // Estado da aplicação
+        let animes = [];
+        let currentTab = 'all';
+        let editingAnimeId = null;
+        let imageMode = 'url';
+        let editImageMode = 'url';
+
+        // Verificar conexão com a API
+        async function checkAPIConnection() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                const statusEl = document.getElementById('apiStatus');
+                if (data.success) {
+                    statusEl.className = 'api-status connected';
+                    statusEl.textContent = '🟢 Conectado ao servidor PostgreSQL';
+                    return true;
+                } else {
+                    throw new Error('API não está funcionando');
+                }
+            } catch (error) {
+                const statusEl = document.getElementById('apiStatus');
+                statusEl.className = 'api-status disconnected';
+                statusEl.textContent = '🔴 Erro ao conectar ao servidor. Verifique se o backend está rodando.';
+                console.error('Erro de conexão:', error);
+                return false;
+            }
+        }
+
+        // Inicialização
+        async function init() {
+            const connected = await checkAPIConnection();
+            if (connected) {
+                await loadAnimes();
+            } else {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('emptyState').innerHTML = `
+                    <h2>⚠️ Servidor Offline</h2>
+                    <p>Não foi possível conectar ao servidor backend.</p>
+                    <p>Certifique-se de que o servidor Node.js está rodando na porta 3000.</p>
+                `;
+            }
+        }
+
+        // Carregar animes da API
+        async function loadAnimes() {
+            try {
+                const response = await fetch(`${API_URL}/animes`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    animes = data.data;
+                    renderAnimes();
+                }
+                
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('animeGrid').style.display = 'grid';
+            } catch (error) {
+                console.error('Erro ao carregar animes:', error);
+                alert('Erro ao carregar animes do servidor');
+            }
+        }
+
+        // Alternar modo de imagem (add form)
+        function toggleImageMode() {
+            const urlInput = document.getElementById('animeImageURL');
+            const fileInput = document.getElementById('animeImageFile');
+            const toggleText = document.getElementById('modeToggleText');
+            const preview = document.getElementById('imagePreview');
+
+            if (imageMode === 'url') {
+                imageMode = 'file';
+                urlInput.style.display = 'none';
+                fileInput.style.display = 'block';
+                toggleText.textContent = '🌐 Usar URL';
+                preview.style.display = 'none';
+            } else {
+                imageMode = 'url';
+                urlInput.style.display = 'block';
+                fileInput.style.display = 'none';
+                toggleText.textContent = '📁 Usar Arquivo Local';
+                preview.style.display = 'none';
+                fileInput.value = '';
+            }
+        }
+
+        // Preview da imagem quando selecionada
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('animeImageFile');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.getElementById('imagePreview');
+                            const previewImg = document.getElementById('previewImg');
+                            previewImg.src = e.target.result;
+                            preview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            const editFileInput = document.getElementById('editImageFile');
+            if (editFileInput) {
+                editFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.getElementById('editImagePreview');
+                            const previewImg = document.getElementById('editPreviewImg');
+                            previewImg.src = e.target.result;
+                            preview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+
+        // Converter arquivo para Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Adicionar novo anime
+        async function addAnime() {
+            const name = document.getElementById('animeName').value.trim();
+            const status = document.getElementById('animeStatus').value;
+            let imageData = null;
+
+            if (imageMode === 'url') {
+                imageData = document.getElementById('animeImageURL').value.trim();
+                if (!imageData) {
+                    alert('Por favor, preencha a URL da imagem!');
+                    return;
+                }
+            } else {
+                const fileInput = document.getElementById('animeImageFile');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Por favor, selecione uma imagem!');
+                    return;
+                }
+                imageData = await fileToBase64(file);
+            }
+
+            if (!name) {
+                alert('Por favor, preencha o nome do anime!');
+                return;
+            }
+
+            const addButton = document.getElementById('addButton');
+            addButton.disabled = true;
+            addButton.textContent = 'Adicionando...';
+
+            try {
+                const response = await fetch(`${API_URL}/animes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        image: imageData,
+                        status,
+                        favorite: false
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Limpar formulário
+                    document.getElementById('animeName').value = '';
+                    document.getElementById('animeImageURL').value = '';
+                    document.getElementById('animeImageFile').value = '';
+                    document.getElementById('animeStatus').value = 'acompanhando';
+                    document.getElementById('imagePreview').style.display = 'none';
+
+                    await loadAnimes();
+                } else {
+                    alert('Erro ao adicionar anime: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar anime:', error);
+                alert('Erro ao conectar ao servidor');
+            } finally {
+                addButton.disabled = false;
+                addButton.textContent = 'Adicionar Anime';
+            }
+        }
+
+        // Alternar favorito
+        async function toggleFavorite(id) {
+            try {
+                const response = await fetch(`${API_URL}/animes/${id}/favorite`, {
+                    method: 'PATCH'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await loadAnimes();
+                } else {
+                    alert('Erro ao atualizar favorito');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar favorito:', error);
+                alert('Erro ao conectar ao servidor');
+            }
+        }
+
+        // Mudar status
+        async function changeStatus(id) {
+            const anime = animes.find(a => a.id == id);
+            if (!anime) return;
+
+            const statuses = ['acompanhando', 'visto', 'futuro'];
+            const currentIndex = statuses.indexOf(anime.status);
+            const newStatus = statuses[(currentIndex + 1) % statuses.length];
+
+            try {
+                const response = await fetch(`${API_URL}/animes/${id}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await loadAnimes();
+                } else {
+                    alert('Erro ao atualizar status');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+                alert('Erro ao conectar ao servidor');
+            }
+        }
+
+        // Alternar modo de imagem no modal de edição
+        function toggleEditImageMode() {
+            const urlInput = document.getElementById('editImageURL');
+            const fileInput = document.getElementById('editImageFile');
+            const toggleText = document.getElementById('editModeToggleText');
+            const preview = document.getElementById('editImagePreview');
+
+            if (editImageMode === 'url') {
+                editImageMode = 'file';
+                urlInput.style.display = 'none';
+                fileInput.style.display = 'block';
+                toggleText.textContent = '🌐 Usar URL';
+                preview.style.display = 'none';
+            } else {
+                editImageMode = 'url';
+                urlInput.style.display = 'block';
+                fileInput.style.display = 'none';
+                toggleText.textContent = '📁 Usar Arquivo Local';
+                preview.style.display = 'none';
+                fileInput.value = '';
+            }
+        }
+
+        // Abrir modal de edição
+        function editAnime(id) {
+            const anime = animes.find(a => a.id == id);
+            if (!anime) return;
+
+            editingAnimeId = id;
+            document.getElementById('editName').value = anime.name;
+            
+            if (anime.image.startsWith('data:')) {
+                editImageMode = 'url';
+                document.getElementById('editImageURL').value = '';
+                document.getElementById('editImageURL').placeholder = 'Imagem local atual - selecione nova ou use URL';
+                document.getElementById('editImageFile').value = '';
+                document.getElementById('editImagePreview').style.display = 'block';
+                document.getElementById('editPreviewImg').src = anime.image;
+            } else {
+                editImageMode = 'url';
+                document.getElementById('editImageURL').value = anime.image;
+                document.getElementById('editImageFile').value = '';
+                document.getElementById('editImagePreview').style.display = 'none';
+            }
+            
+            document.getElementById('editImageURL').style.display = 'block';
+            document.getElementById('editImageFile').style.display = 'none';
+            document.getElementById('editModeToggleText').textContent = '📁 Usar Arquivo Local';
+            
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // Salvar edição
+        async function saveEdit() {
+            const name = document.getElementById('editName').value.trim();
+            let imageData = null;
+
+            if (!name) {
+                alert('Por favor, preencha o nome do anime!');
+                return;
+            }
+
+            if (editImageMode === 'url') {
+                imageData = document.getElementById('editImageURL').value.trim();
+            } else {
+                const fileInput = document.getElementById('editImageFile');
+                const file = fileInput.files[0];
+                if (file) {
+                    imageData = await fileToBase64(file);
+                }
+            }
+
+            try {
+                const body = { name };
+                if (imageData) {
+                    body.image = imageData;
+                }
+
+                const response = await fetch(`${API_URL}/animes/${editingAnimeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeEditModal();
+                    await loadAnimes();
+                } else {
+                    alert('Erro ao atualizar anime');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar anime:', error);
+                alert('Erro ao conectar ao servidor');
+            }
+        }
+
+        // Fechar modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            document.getElementById('editImagePreview').style.display = 'none';
+            editingAnimeId = null;
+            editImageMode = 'url';
+        }
+
+        // Deletar anime
+        async function deleteAnime(id) {
+            if (!confirm('Tem certeza que deseja deletar este anime?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/animes/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await loadAnimes();
+                } else {
+                    alert('Erro ao deletar anime');
+                }
+            } catch (error) {
+                console.error('Erro ao deletar anime:', error);
+                alert('Erro ao conectar ao servidor');
+            }
+        }
+
+        // Trocar aba
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            filterAnimes();
+        }
+
+        // Filtrar e renderizar animes
+        function filterAnimes() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filterStatus = document.getElementById('filterStatus').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filtered = [...animes];
+
+            // Filtro por busca
+            if (searchTerm) {
+                filtered = filtered.filter(a => a.name.toLowerCase().includes(searchTerm));
+            }
+
+            // Filtro por status
+            if (currentTab !== 'all') {
+                if (currentTab === 'favoritos') {
+                    filtered = filtered.filter(a => a.favorite);
+                } else {
+                    filtered = filtered.filter(a => a.status === currentTab);
+                }
+            }
+
+            if (filterStatus !== 'all') {
+                if (filterStatus === 'favoritos') {
+                    filtered = filtered.filter(a => a.favorite);
+                } else {
+                    filtered = filtered.filter(a => a.status === filterStatus);
+                }
+            }
+
+            // Ordenação
+            if (sortBy === 'favorites') {
+                filtered.sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0));
+            } else if (sortBy === 'name') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sortBy === 'recent') {
+                filtered.sort((a, b) => new Date(b.added_at) - new Date(a.added_at));
+            }
+
+            renderFilteredAnimes(filtered);
+        }
+
+        // Renderizar animes filtrados
+        function renderFilteredAnimes(filtered) {
+            const grid = document.getElementById('animeGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filtered.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM13.5 11.5l-2.25 3.01L9.5 12.5 7 16h10z"/>
+                    </svg>
+                    <h2>Nenhum anime encontrado</h2>
+                    <p>Adicione seu primeiro anime acima!</p>
+                `;
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            grid.innerHTML = '';
+
+            filtered.forEach(anime => {
+                const card = createAnimeCard(anime);
+                grid.appendChild(card);
+            });
+        }
+
+        // Renderizar todos os animes
+        function renderAnimes() {
+            filterAnimes();
+        }
+
+        // Criar card de anime
+        function createAnimeCard(anime) {
+            const card = document.createElement('div');
+            card.className = `anime-card ${anime.favorite ? 'favorite' : ''}`;
+
+            const statusClass = `status-${anime.status}`;
+            const statusText = {
+                'acompanhando': 'Acompanhando',
+                'visto': 'Já Visto',
+                'futuro': 'Assistir Futuramente'
+            }[anime.status];
+
+            card.innerHTML = `
+                <img src="${anime.image}" alt="${anime.name}" class="anime-image" 
+                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22300%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ESem Imagem%3C/text%3E%3C/svg%3E'">
+                <div class="anime-info">
+                    <div class="anime-name">${anime.name}</div>
+                    <span class="anime-status ${statusClass}">${statusText}</span>
+                    <div class="anime-actions">
+                        <button class="btn btn-small btn-edit" onclick="editAnime(${anime.id})">✏️</button>
+                        <button class="btn btn-small btn-favorite ${anime.favorite ? 'active' : ''}" 
+                                onclick="toggleFavorite(${anime.id})">⭐</button>
+                        <button class="btn btn-small btn-status" onclick="changeStatus(${anime.id})">🔄</button>
+                        <button class="btn btn-small btn-delete" onclick="deleteAnime(${anime.id})">🗑️</button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Iniciar aplicação
+        init();
+    </script>
+</body>
+</html>
