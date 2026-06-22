@@ -1,0 +1,1024 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0d0f14;--surface:#161920;--surface2:#1e2230;--border:#2a2f42;
+--text:#e8eaf6;--text2:#8890b0;--accent:#6c63ff;--green:#4ade80;--red:#f87171;
+--gold:#ffd700;--orange:#fb923c;--purple:#c084fc;--teal:#2dd4bf;
+--eixo:#ef4444;--aliados:#3b82f6;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+h1,h2,h3{font-family:'Syne',sans-serif}
+.screen{display:none;min-height:100vh;padding:1.2rem}
+.screen.active{display:flex;flex-direction:column;align-items:center}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.2rem}
+.btn{font-family:'Syne',sans-serif;font-weight:700;border:none;border-radius:10px;padding:.6rem 1.3rem;cursor:pointer;font-size:.88rem;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#5a52e0;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+input[type=text]{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.65rem 1rem;color:var(--text);font-size:1rem;font-family:'DM Sans',sans-serif;width:100%;outline:none}
+input[type=text]:focus{border-color:var(--accent)}
+.phase-header{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:980px;margin-bottom:.8rem;flex-wrap:wrap;gap:.5rem}
+.stat-pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.35rem .85rem;font-size:.82rem;display:flex;align-items:center;gap:5px}
+.progress-bar{height:5px;background:var(--surface2);border-radius:3px;width:100%;max-width:980px;margin-bottom:.7rem;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .4s}
+.powerup-bar{display:flex;gap:.4rem;flex-wrap:wrap;width:100%;max-width:980px;margin-bottom:.5rem}
+.pu-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.35rem .75rem;cursor:pointer;font-size:.78rem;color:var(--text);font-family:'Syne',sans-serif;transition:all .15s;display:flex;align-items:center;gap:4px}
+.pu-btn:hover:not(:disabled){border-color:var(--accent);background:var(--accent);color:#fff}
+.pu-btn:disabled{opacity:.4;cursor:not-allowed}
+.pu-btn.active-pu{border-color:var(--gold);background:#2a2000;color:var(--gold)}
+.notif{position:fixed;top:70px;right:16px;padding:.65rem 1.1rem;border-radius:12px;font-size:.82rem;font-weight:500;z-index:9999;animation:slideIn .3s;max-width:260px;line-height:1.4;pointer-events:none}
+.notif-success{background:#0f2d1a;border:1px solid var(--green);color:var(--green)}
+.notif-error{background:#2d0f0f;border:1px solid var(--red);color:var(--red)}
+.notif-info{background:#1a1a35;border:1px solid var(--accent);color:var(--accent)}
+.notif-gold{background:#2a2000;border:1px solid var(--gold);color:var(--gold)}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.wrong-counter{display:flex;gap:3px;align-items:center}
+.life{width:9px;height:9px;border-radius:50%;background:var(--red)}
+.life.lost{background:var(--surface2);border:1px solid var(--border)}
+.multiplier-banner{background:#2a2000;border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:.3rem .7rem;font-size:.78rem;font-weight:700;text-align:center;margin-bottom:.4rem;animation:pulse-gold 1.5s infinite;width:100%;max-width:980px}
+.diff-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:1.1rem;cursor:pointer;transition:all .2s;text-align:center}
+.diff-card:hover,.diff-card.selected{border-color:var(--accent);background:#15152a}
+.tabs{display:flex;gap:.4rem;margin-bottom:.9rem}
+.tab{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.35rem .85rem;cursor:pointer;font-size:.82rem;color:var(--text2)}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.leaderboard-row{display:grid;grid-template-columns:30px 1fr auto;gap:.4rem;align-items:center;padding:.55rem .7rem;border-radius:10px;border:1px solid var(--border);background:var(--surface)}
+.leaderboard-row.me{border-color:var(--accent);background:#15152a}
+.achievement-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.5rem;width:100%}
+.ach-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:.65rem;text-align:center;font-size:.75rem}
+.ach-card.earned{border-color:var(--gold);background:#1a1600}
+.ach-icon{font-size:1.5rem;margin-bottom:.25rem}
+
+/* MATCH */
+.match-area{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;width:100%;max-width:980px}
+.match-col{display:flex;flex-direction:column;gap:.45rem}
+.match-item{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:.65rem .9rem;cursor:pointer;font-size:.83rem;transition:all .18s;user-select:none;min-height:50px;display:flex;align-items:center;line-height:1.3}
+.match-item:hover:not(.matched){border-color:var(--accent);background:var(--surface2)}
+.match-item.selected{border-color:var(--accent);background:#1a1a35;box-shadow:0 0 0 2px var(--accent)}
+.match-item.matched{border-color:var(--green);background:#0f1f14;color:var(--green);cursor:default}
+.match-item.wrong{border-color:var(--red);animation:shake .3s}
+.match-item.hint-highlight{border-color:var(--gold);background:#1f1a00;animation:pulse-gold 1s infinite}
+
+/* FLAGS */
+.flags-wrapper{width:100%;max-width:980px}
+.flags-grid{display:grid;gap:.5rem;width:100%}
+.flag-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:.5rem .4rem;cursor:pointer;transition:all .18s;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:70px}
+.flag-card:hover:not(.matched){border-color:var(--accent);background:var(--surface2)}
+.flag-card.selected{border-color:var(--accent);background:#1a1a35;box-shadow:0 0 0 2px var(--accent)}
+.flag-card.matched{border-color:var(--green);background:#0f1f14;cursor:default}
+.flag-card.wrong{border-color:var(--red);animation:shake .3s}
+.flag-card.hint-highlight{border-color:var(--gold);background:#1f1a00;animation:pulse-gold 1s infinite}
+.flag-emoji{font-size:1.9rem;line-height:1}
+.flag-name{font-size:.62rem;color:var(--text2);text-align:center;line-height:1.2;max-width:72px}
+.flag-card.matched .flag-name{color:var(--green)}
+
+/* EIXO VS ALIADOS */
+.guerra-wrapper{width:100%;max-width:980px}
+.guerra-top{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.zona-drop{border:2px dashed var(--border);border-radius:14px;padding:.8rem;min-height:120px;transition:border-color .2s}
+.zona-drop.eixo-zone{border-color:#ef444466;background:#1a0808}
+.zona-drop.aliados-zone{border-color:#3b82f666;background:#080d1a}
+.zona-drop.drag-over{border-style:solid;border-color:var(--gold)}
+.zona-title{display:flex;align-items:center;gap:.5rem;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:.6rem}
+.zona-tags{display:flex;flex-wrap:wrap;gap:.4rem;min-height:40px}
+.country-tag{display:inline-flex;align-items:center;gap:5px;padding:.3rem .65rem;border-radius:20px;font-size:.78rem;cursor:pointer;user-select:none;transition:all .15s;font-weight:500}
+.country-tag.correct{pointer-events:none}
+.country-tag.wrong-tag{animation:shake .3s}
+.countries-pool{display:flex;flex-wrap:wrap;gap:.45rem;width:100%;justify-content:center}
+.pool-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.4rem .85rem;cursor:pointer;font-size:.8rem;user-select:none;transition:all .18s;display:flex;align-items:center;gap:5px}
+.pool-card:hover{border-color:var(--accent);background:var(--surface2)}
+.pool-card.selected-pool{border-color:var(--gold);background:#2a2000;color:var(--gold)}
+.pool-card.placed{opacity:.35;pointer-events:none;text-decoration:line-through}
+.score-bar{display:flex;justify-content:space-between;margin-bottom:.6rem;font-size:.8rem;color:var(--text2)}
+.score-bar span{font-weight:700}
+.guerra-info{background:var(--surface2);border-radius:10px;padding:.5rem .75rem;font-size:.75rem;color:var(--text2);margin-bottom:.7rem;line-height:1.5;width:100%;max-width:980px}
+
+/* WORDSEARCH */
+.ws-wrapper{width:100%;max-width:980px;display:grid;grid-template-columns:1fr 190px;gap:1rem;align-items:start}
+.ws-grid-wrap{overflow:auto}
+.ws-cell{width:29px;height:29px;display:inline-flex;align-items:center;justify-content:center;font-size:.79rem;font-weight:500;border:1px solid var(--border);border-radius:5px;cursor:pointer;user-select:none;transition:background .1s;color:var(--text)}
+.ws-cell:hover{background:var(--surface2)}
+.ws-cell.selecting{background:#1a1a35;color:var(--accent);border-color:var(--accent)}
+.ws-cell.found{background:#0f2d1a;color:var(--green);border-color:var(--green);cursor:default}
+.ws-word-list{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem;min-width:170px}
+.ws-word{font-size:.77rem;padding:.22rem .4rem;border-radius:6px;margin-bottom:.28rem;color:var(--text2);line-height:1.3}
+.ws-word.found{color:var(--green);text-decoration:line-through;background:#0f2d1a}
+.ws-word strong{display:block;color:var(--text)}
+.ws-word.found strong{color:var(--green)}
+.ws-word .role{font-size:.65rem;color:var(--text2);display:block}
+.ws-row{display:flex;gap:2px;margin-bottom:2px}
+.timer-paused{color:var(--teal)!important;animation:blink .7s infinite}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pulse-gold{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.4)}50%{box-shadow:0 0 0 6px rgba(255,215,0,0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+
+<div id="screen-start" class="screen active">
+  <div style="max-width:460px;width:100%;margin-top:1.5rem">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <h1 style="font-size:2rem;font-weight:800;color:var(--accent)">COMBINA!</h1>
+      <p style="color:var(--text2);font-size:.9rem">7 fases — Conhecimento geral, História, Geografia & mais</p>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:.9rem">
+      <div>
+        <label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:.35rem">Seu nome</label>
+        <input type="text" id="player-name" placeholder="Digite seu nome..." maxlength="24"/>
+      </div>
+      <div>
+        <label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:.5rem">Dificuldade</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">
+          <div class="diff-card selected" onclick="selectDiff('facil',this)" style="border-color:#4ade8044">
+            <div style="font-size:1.2rem;margin-bottom:.25rem">🟢</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;color:var(--green)">Fácil</div>
+            <div style="font-size:.68rem;color:var(--text2);margin-top:.25rem">+10pts · 6 erros</div>
+          </div>
+          <div class="diff-card" onclick="selectDiff('medio',this)" style="border-color:#fb923c44">
+            <div style="font-size:1.2rem;margin-bottom:.25rem">🟡</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;color:var(--orange)">Médio</div>
+            <div style="font-size:.68rem;color:var(--text2);margin-top:.25rem">+15pts · 4 erros</div>
+          </div>
+          <div class="diff-card" onclick="selectDiff('dificil',this)" style="border-color:#f8717144">
+            <div style="font-size:1.2rem;margin-bottom:.25rem">🔴</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;color:var(--red)">Difícil</div>
+            <div style="font-size:.68rem;color:var(--text2);margin-top:.25rem">+20pts · 2 erros</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:.7rem;font-size:.78rem;color:var(--text2)">
+        <div style="font-weight:700;color:var(--text);margin-bottom:.3rem">📚 7 Fases:</div>
+        <div>1. Tabela Periódica &nbsp; 2. Datas Históricas</div>
+        <div style="color:#ef9999">3. ⚔️ Eixo vs Aliados (2ª Guerra)</div>
+        <div>4. Língua Portuguesa &nbsp; 5. Filósofos</div>
+        <div style="color:var(--accent)">6. Bandeiras do Mundo 🌍 &nbsp; 7. Caça-palavras 🇧🇷</div>
+      </div>
+      <button class="btn btn-primary" onclick="startGame()" style="width:100%;font-size:.95rem;padding:.75rem">Começar →</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-ranking')" style="width:100%">🏆 Ver Ranking</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-game" class="screen">
+  <div class="phase-header">
+    <div>
+      <h2 id="phase-title" style="font-size:1rem;font-weight:700"></h2>
+      <div id="phase-desc" style="font-size:.75rem;color:var(--text2);margin-top:2px"></div>
+    </div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+      <div class="stat-pill">⭐ <span id="score-display">0</span></div>
+      <div class="stat-pill" id="timer-pill">⏱ <span id="timer-display">0:00</span></div>
+      <div class="stat-pill">Fase <span id="phase-num">1</span>/7</div>
+      <div class="stat-pill wrong-counter" id="wrong-counter"></div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div id="multiplier-banner" class="multiplier-banner" style="display:none">✨ MULTIPLICADOR ATIVO — próximo acerto vale o dobro!</div>
+  <div class="powerup-bar" id="powerup-bar"></div>
+  <div id="game-content"></div>
+</div>
+
+<div id="screen-ranking" class="screen">
+  <div style="max-width:680px;width:100%;margin-top:1.2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h2 style="font-size:1.3rem;font-weight:800">🏆 Ranking</h2>
+      <button class="btn btn-secondary" onclick="showScreen('screen-start')">← Voltar</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchRankTab('facil',this)">🟢 Fácil</div>
+      <div class="tab" onclick="switchRankTab('medio',this)">🟡 Médio</div>
+      <div class="tab" onclick="switchRankTab('dificil',this)">🔴 Difícil</div>
+    </div>
+    <div id="leaderboard-list" style="display:flex;flex-direction:column;gap:.35rem"></div>
+  </div>
+</div>
+
+<div id="screen-end" class="screen">
+  <div style="max-width:580px;width:100%;margin-top:1.2rem">
+    <div style="text-align:center;margin-bottom:1.2rem">
+      <div style="font-size:2.8rem;margin-bottom:.4rem">🎉</div>
+      <h1 style="font-size:1.7rem;font-weight:800">Parabéns!</h1>
+      <div id="end-player-name" style="color:var(--text2);margin-top:.25rem"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem">
+      <div class="card" style="text-align:center"><div style="font-size:.75rem;color:var(--text2)">Pontuação</div><div id="end-score" style="font-size:1.7rem;font-weight:700;color:var(--accent)"></div></div>
+      <div class="card" style="text-align:center"><div style="font-size:.75rem;color:var(--text2)">Tempo</div><div id="end-time" style="font-size:1.7rem;font-weight:700;color:var(--purple)"></div></div>
+    </div>
+    <div class="card" style="margin-bottom:.9rem">
+      <h3 style="font-size:.9rem;font-weight:700;margin-bottom:.7rem">🏅 Conquistas</h3>
+      <div id="end-achievements" class="achievement-grid"></div>
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-primary" onclick="showScreen('screen-start');resetGame()" style="flex:1">Jogar Novamente</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-ranking')" style="flex:1">Ver Ranking</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── EIXO VS ALIADOS DATA ─────────────────────────────────────────────────
+const EIXO_ALL=[
+{name:'🇩🇪 Alemanha',flag:'🇩🇪'},
+{name:'🇮🇹 Itália',flag:'🇮🇹'},
+{name:'🇯🇵 Japão',flag:'🇯🇵'},
+{name:'🇭🇺 Hungria',flag:'🇭🇺'},
+{name:'🇷🇴 Romênia',flag:'🇷🇴'},
+{name:'🇧🇬 Bulgária',flag:'🇧🇬'},
+{name:'🇸🇰 Eslováquia',flag:'🇸🇰'},
+{name:'🇭🇷 Croácia',flag:'🇭🇷'},
+{name:'🇫🇮 Finlândia',flag:'🇫🇮'},
+{name:'🇹🇭 Tailândia',flag:'🇹🇭'},
+{name:'🇮🇶 Iraque (gov. pró-Eixo)',flag:'🇮🇶'},
+{name:'🇲🇳 Manchúkuo',flag:'🇲🇳'}
+];
+
+const ALIADOS_ALL=[
+{name:'🇺🇸 Estados Unidos',flag:'🇺🇸'},
+{name:'🇬🇧 Reino Unido',flag:'🇬🇧'},
+{name:'🇷🇺 União Soviética',flag:'🇷🇺'},
+{name:'🇫🇷 França',flag:'🇫🇷'},
+{name:'🇧🇷 Brasil',flag:'🇧🇷'},
+{name:'🇨🇦 Canadá',flag:'🇨🇦'},
+{name:'🇦🇺 Austrália',flag:'🇦🇺'},
+{name:'🇨🇳 China',flag:'🇨🇳'},
+{name:'🇵🇱 Polônia',flag:'🇵🇱'},
+{name:'🇳🇱 Países Baixos',flag:'🇳🇱'},
+{name:'🇧🇪 Bélgica',flag:'🇧🇪'},
+{name:'🇬🇷 Grécia',flag:'🇬🇷'},
+{name:'🇳🇴 Noruega',flag:'🇳🇴'},
+{name:'🇿🇦 África do Sul',flag:'🇿🇦'},
+{name:'🇳🇿 Nova Zelândia',flag:'🇳🇿'},
+{name:'🇮🇳 Índia',flag:'🇮🇳'}
+];
+
+// Por dificuldade: quantos países de cada lado mostrar
+const GUERRA_DIFF={facil:{n:4},medio:{n:7},dificil:{n:10}};
+
+// ── FLAGS DATA ────────────────────────────────────────────────────────────
+const ALL_FLAGS=[
+['🇦🇫','Afeganistão'],['🇦🇱','Albânia'],['🇩🇿','Argélia'],['🇦🇩','Andorra'],['🇦🇴','Angola'],
+['🇦🇬','Antígua e Barbuda'],['🇦🇷','Argentina'],['🇦🇲','Armênia'],['🇦🇺','Austrália'],['🇦🇹','Áustria'],
+['🇦🇿','Azerbaijão'],['🇧🇸','Bahamas'],['🇧🇭','Bahrein'],['🇧🇩','Bangladesh'],['🇧🇧','Barbados'],
+['🇧🇾','Bielorrússia'],['🇧🇪','Bélgica'],['🇧🇿','Belize'],['🇧🇯','Benin'],['🇧🇹','Butão'],
+['🇧🇴','Bolívia'],['🇧🇦','Bósnia e Herzegovina'],['🇧🇼','Botswana'],['🇧🇷','Brasil'],['🇧🇳','Brunei'],
+['🇧🇬','Bulgária'],['🇧🇫','Burkina Faso'],['🇧🇮','Burundi'],['🇨🇻','Cabo Verde'],['🇰🇭','Camboja'],
+['🇨🇲','Camarões'],['🇨🇦','Canadá'],['🇨🇫','Rep. Centro-Africana'],['🇹🇩','Chade'],['🇨🇱','Chile'],
+['🇨🇳','China'],['🇨🇴','Colômbia'],['🇰🇲','Comores'],['🇨🇬','Congo'],['🇨🇩','Congo (RDC)'],
+['🇨🇷','Costa Rica'],['🇨🇮','Costa do Marfim'],['🇭🇷','Croácia'],['🇨🇺','Cuba'],['🇨🇾','Chipre'],
+['🇨🇿','Tchéquia'],['🇩🇰','Dinamarca'],['🇩🇯','Djibuti'],['🇩🇲','Dominica'],['🇩🇴','Rep. Dominicana'],
+['🇪🇨','Equador'],['🇪🇬','Egito'],['🇸🇻','El Salvador'],['🇬🇶','Guiné Equatorial'],['🇪🇷','Eritreia'],
+['🇪🇪','Estônia'],['🇸🇿','Essuatíni'],['🇪🇹','Etiópia'],['🇫🇯','Fiji'],['🇫🇮','Finlândia'],
+['🇫🇷','França'],['🇬🇦','Gabão'],['🇬🇲','Gâmbia'],['🇬🇪','Geórgia'],['🇩🇪','Alemanha'],
+['🇬🇭','Gana'],['🇬🇷','Grécia'],['🇬🇩','Granada'],['🇬🇹','Guatemala'],['🇬🇳','Guiné'],
+['🇬🇼','Guiné-Bissau'],['🇬🇾','Guiana'],['🇭🇹','Haiti'],['🇭🇳','Honduras'],['🇭🇺','Hungria'],
+['🇮🇸','Islândia'],['🇮🇳','Índia'],['🇮🇩','Indonésia'],['🇮🇷','Irã'],['🇮🇶','Iraque'],
+['🇮🇪','Irlanda'],['🇮🇱','Israel'],['🇮🇹','Itália'],['🇯🇲','Jamaica'],['🇯🇵','Japão'],
+['🇯🇴','Jordânia'],['🇰🇿','Cazaquistão'],['🇰🇪','Quênia'],['🇰🇮','Kiribati'],
+['🇰🇼','Kuwait'],['🇰🇬','Quirguistão'],['🇱🇦','Laos'],['🇱🇻','Letônia'],['🇱🇧','Líbano'],
+['🇱🇸','Lesoto'],['🇱🇷','Libéria'],['🇱🇾','Líbia'],['🇱🇮','Liechtenstein'],['🇱🇹','Lituânia'],
+['🇱🇺','Luxemburgo'],['🇲🇬','Madagascar'],['🇲🇼','Malaui'],['🇲🇾','Malásia'],['🇲🇻','Maldivas'],
+['🇲🇱','Mali'],['🇲🇹','Malta'],['🇲🇷','Mauritânia'],['🇲🇺','Maurício'],
+['🇲🇽','México'],['🇲🇩','Moldávia'],['🇲🇨','Mônaco'],['🇲🇳','Mongólia'],
+['🇲🇪','Montenegro'],['🇲🇦','Marrocos'],['🇲🇿','Moçambique'],['🇲🇲','Myanmar'],['🇳🇦','Namíbia'],
+['🇳🇵','Nepal'],['🇳🇱','Países Baixos'],['🇳🇿','Nova Zelândia'],['🇳🇮','Nicarágua'],
+['🇳🇪','Níger'],['🇳🇬','Nigéria'],['🇲🇰','Macedônia do Norte'],['🇳🇴','Noruega'],['🇴🇲','Omã'],
+['🇵🇰','Paquistão'],['🇵🇦','Panamá'],['🇵🇬','Papua Nova Guiné'],
+['🇵🇾','Paraguai'],['🇵🇪','Peru'],['🇵🇭','Filipinas'],['🇵🇱','Polônia'],['🇵🇹','Portugal'],
+['🇶🇦','Catar'],['🇷🇴','Romênia'],['🇷🇺','Rússia'],['🇷🇼','Ruanda'],
+['🇼🇸','Samoa'],['🇸🇲','San Marino'],['🇸🇦','Arábia Saudita'],['🇸🇳','Senegal'],['🇷🇸','Sérvia'],
+['🇸🇨','Seicheles'],['🇸🇱','Serra Leoa'],['🇸🇬','Singapura'],['🇸🇰','Eslováquia'],['🇸🇮','Eslovênia'],
+['🇸🇴','Somália'],['🇿🇦','África do Sul'],['🇸🇸','Sudão do Sul'],
+['🇪🇸','Espanha'],['🇱🇰','Sri Lanka'],['🇸🇩','Sudão'],['🇸🇷','Suriname'],['🇸🇪','Suécia'],
+['🇨🇭','Suíça'],['🇸🇾','Síria'],['🇹🇼','Taiwan'],['🇹🇯','Tajiquistão'],['🇹🇿','Tanzânia'],
+['🇹🇭','Tailândia'],['🇹🇱','Timor-Leste'],['🇹🇬','Togo'],['🇹🇴','Tonga'],['🇹🇹','Trinidad e Tobago'],
+['🇹🇳','Tunísia'],['🇹🇷','Turquia'],['🇹🇲','Turcomenistão'],['🇺🇬','Uganda'],
+['🇺🇦','Ucrânia'],['🇦🇪','Emirados Árabes'],['🇬🇧','Reino Unido'],['🇺🇸','Estados Unidos'],
+['🇺🇾','Uruguai'],['🇺🇿','Uzbequistão'],['🇻🇺','Vanuatu'],['🇻🇦','Vaticano'],['🇻🇪','Venezuela'],
+['🇻🇳','Vietnã'],['🇾🇪','Iêmen'],['🇿🇲','Zâmbia'],['🇿🇼','Zimbábue'],
+['🇰🇵','Coreia do Norte'],['🇰🇷','Coreia do Sul']
+];
+const FLAG_PAIRS_FULL=(()=>{const s=new Set();return ALL_FLAGS.filter(p=>{if(s.has(p[0]))return false;s.add(p[0]);return true})})();
+const DIFF_FLAGS={facil:12,medio:20,dificil:30};
+
+const WS_WORDS=[
+{word:'TIRADENTES',role:'Herói da Inconfidência Mineira',f:false},
+{word:'PELÉ',role:'Rei do futebol brasileiro',f:false},
+{word:'SANTOS',role:'Santos Dumont — pai da aviação',f:false},
+{word:'ANCHIETA',role:'Padre jesuíta, fundador de cidades',f:false},
+{word:'CAXIAS',role:'Duque de Caxias — patrono do Exército',f:false},
+{word:'DRUMMOND',role:'Carlos Drummond de Andrade — poeta',f:false},
+{word:'AMADO',role:'Jorge Amado — escritor baiano',f:false},
+{word:'MACHADO',role:'Machado de Assis — maior romancista',f:false},
+{word:'TARSILA',role:'Tarsila do Amaral — pintora modernista',f:true},
+{word:'CLARICE',role:'Clarice Lispector — escritora',f:true},
+{word:'CHIQUINHA',role:'Chiquinha Gonzaga — compositora',f:true},
+{word:'MARIA',role:'Maria Quiteria — heroína da independência',f:true},
+{word:'ZILDA',role:'Zilda Arns — pediatra humanitária',f:true},
+{word:'CARMEN',role:'Carmen Miranda — ícone cultural',f:true},
+{word:'PAGU',role:'Patrícia Galvão (Pagu) — escritora modernista',f:true},
+{word:'DULCE',role:'Irmã Dulce — santa brasileira',f:true}
+];
+
+const PHASES=[
+{
+  "id": "tabela",
+  "title": "Tabela Periódica",
+  "desc": "Relacione o elemento ao seu símbolo",
+  "type": "match",
+  "pairs": [
+    ["Hidrogênio", "H"],
+    ["Hélio", "He"],
+    ["Lítio", "Li"],
+    ["Berílio", "Be"],
+    ["Boro", "B"],
+    ["Carbono", "C"],
+    ["Nitrogênio", "N"],
+    ["Oxigênio", "O"],
+    ["Flúor", "F"],
+    ["Neônio", "Ne"],
+    ["Sódio", "Na"],
+    ["Magnésio", "Mg"],
+    ["Alumínio", "Al"],
+    ["Silício", "Si"],
+    ["Fósforo", "P"],
+    ["Enxofre", "S"],
+    ["Cloro", "Cl"],
+    ["Argônio", "Ar"],
+    ["Potássio", "K"],
+    ["Cálcio", "Ca"],
+    ["Escândio", "Sc"],
+    ["Titânio", "Ti"],
+    ["Vanádio", "V"],
+    ["Crômio", "Cr"],
+    ["Manganês", "Mn"],
+    ["Ferro", "Fe"],
+    ["Cobalto", "Co"],
+    ["Níquel", "Ni"],
+    ["Cobre", "Cu"],
+    ["Zinco", "Zn"],
+    ["Gálio", "Ga"],
+    ["Germânio", "Ge"],
+    ["Arsênio", "As"],
+    ["Selênio", "Se"],
+    ["Bromo", "Br"],
+    ["Criptônio", "Kr"],
+    ["Rubídio", "Rb"],
+    ["Estrôncio", "Sr"],
+    ["Ítrio", "Y"],
+    ["Zircônio", "Zr"],
+    ["Nióbio", "Nb"],
+    ["Molibdênio", "Mo"],
+    ["Tecnécio", "Tc"],
+    ["Rutênio", "Ru"],
+    ["Ródio", "Rh"],
+    ["Paládio", "Pd"],
+    ["Prata", "Ag"],
+    ["Cádmio", "Cd"],
+    ["Índio", "In"],
+    ["Estanho", "Sn"],
+    ["Antimônio", "Sb"],
+    ["Telúrio", "Te"],
+    ["Iodo", "I"],
+    ["Xenônio", "Xe"],
+    ["Césio", "Cs"],
+    ["Bário", "Ba"],
+    ["Lantânio", "La"],
+    ["Cério", "Ce"],
+    ["Praseodímio", "Pr"],
+    ["Neodímio", "Nd"],
+    ["Promécio", "Pm"],
+    ["Samário", "Sm"],
+    ["Európio", "Eu"],
+    ["Gadolínio", "Gd"],
+    ["Térbio", "Tb"],
+    ["Disprósio", "Dy"],
+    ["Hólmio", "Ho"],
+    ["Érbio", "Er"],
+    ["Túlio", "Tm"],
+    ["Itérbio", "Yb"],
+    ["Lutécio", "Lu"],
+    ["Háfnio", "Hf"],
+    ["Tântalo", "Ta"],
+    ["Tungstênio", "W"],
+    ["Rênio", "Re"],
+    ["Ósmio", "Os"],
+    ["Irídio", "Ir"],
+    ["Platina", "Pt"],
+    ["Ouro", "Au"],
+    ["Mercúrio", "Hg"],
+    ["Tálio", "Tl"],
+    ["Chumbo", "Pb"],
+    ["Bismuto", "Bi"],
+    ["Polônio", "Po"],
+    ["Astato", "At"],
+    ["Radônio", "Rn"],
+    ["Frâncio", "Fr"],
+    ["Rádio", "Ra"],
+    ["Actínio", "Ac"],
+    ["Tório", "Th"],
+    ["Protactínio", "Pa"],
+    ["Urânio", "U"],
+    ["Netúnio", "Np"],
+    ["Plutônio", "Pu"],
+    ["Amerício", "Am"],
+    ["Cúrio", "Cm"],
+    ["Berquélio", "Bk"],
+    ["Califórnio", "Cf"],
+    ["Enstênio", "Es"],
+    ["Férmio", "Fm"],
+    ["Mendelévio", "Md"],
+    ["Nobélio", "No"],
+    ["Laurêncio", "Lr"],
+    ["Rutherfórdio", "Rf"],
+    ["Dúbnio", "Db"],
+    ["Seabórgio", "Sg"],
+    ["Bohrio", "Bh"],
+    ["Hássio", "Hs"],
+    ["Meitnério", "Mt"],
+    ["Darmstádio", "Ds"],
+    ["Roentgênio", "Rg"],
+    ["Copernício", "Cn"],
+    ["Niônio", "Nh"],
+    ["Fleróvio", "Fl"],
+    ["Moscóvio", "Mc"],
+    ["Livermório", "Lv"],
+    ["Tenesso", "Ts"],
+    ["Oganessônio", "Og"]
+  ]
+},
+{id:'historia',title:'Datas Históricas',desc:'Relacione a data ao evento',type:'match',
+pairs:[['1492','Chegada de Colombo à América'],['1500','Chegada de Cabral ao Brasil'],['1789','Revolução Francesa'],['1822','Independência do Brasil'],['1888','Abolição da Escravidão no Brasil'],['1914','Início da 1ª Guerra Mundial'],['1945','Fim da 2ª Guerra Mundial'],['1969','Homem na Lua'],['1989','Queda do Muro de Berlim'],['2001','Ataques de 11 de setembro'],['1776','Independência dos EUA'],['1917','Revolução Russa'],['1955','Rosa Parks recusa ceder assento'],['1964','Golpe militar no Brasil'],['1985','Fim da Ditadura no Brasil'],['1994','Mandela presidente da África do Sul'],['2020','Pandemia de COVID-19'],['1871','Unificação da Alemanha']]},
+{id:'guerra',title:'⚔️ 2ª Guerra Mundial — Eixo vs Aliados',desc:'Arraste ou clique cada país para o lado correto',type:'guerra'},
+{id:'portugues',title:'Língua Portuguesa',desc:'Relacione a descrição ao termo gramatical',type:'match',
+pairs:[['Palavra que substitui o substantivo','Pronome'],['Modifica o verbo ou adjetivo','Advérbio'],['Liga orações ou palavras','Conjunção'],['Indica qualidade do substantivo','Adjetivo'],['Expressa ação ou estado','Verbo'],['Determina e acompanha o substantivo','Artigo'],['Relaciona termos da oração','Preposição'],['Aumenta ou diminui o sentido','Sufixo'],['Verbo no passado concluído','Pretérito Perfeito'],['Frase sem verbo','Frase Nominal'],['Figura que exagera a ideia','Hipérbole'],['Contradição aparente','Paradoxo'],['Comparação sem como','Metáfora'],['Repetição de sons consonantais','Aliteração'],['Inversão da ordem natural','Inversão'],['Atribuir características humanas','Personificação'],['Oração que funciona como sujeito','Oração Subjetiva'],['Sujeito implícito na desinência','Sujeito Oculto']]},
+{id:'filosofia',title:'Filósofos & Sociólogos',desc:'Relacione o autor à sua frase ou ideia',type:'match',
+pairs:[['Sócrates','Conhece-te a ti mesmo'],['Platão','Mundo das Ideias e a Caverna'],['Aristóteles','O homem é um animal político'],['Descartes','Penso, logo existo'],['Kant','Imperativo categórico'],['Nietzsche','Deus está morto'],['Marx','Trabalhadores do mundo, uni-vos!'],['Rousseau','O homem nasce bom'],['Hegel','Dialética: tese, antítese, síntese'],['Weber','Ética protestante e capitalismo'],['Durkheim','Fato social coercitivo'],['Simone de Beauvoir','Não se nasce mulher, torna-se'],['Foucault','O poder é exercido, não possuído'],['Hobbes','O homem é o lobo do homem'],['Locke','Homens nascem livres e iguais'],['Sartre','A existência precede a essência'],['Bourdieu','Capital cultural e habitus'],['Habermas','Agir comunicativo']]},
+{id:'bandeiras',title:'Bandeiras do Mundo 🌍',desc:'',type:'flags'},
+{id:'cacapalavras',title:'Caça-Palavras — Personalidades Brasileiras 🇧🇷',desc:'Encontre nomes de grandes personalidades do Brasil',type:'wordsearch',words:WS_WORDS}
+];
+
+const DIFF_CFG={
+facil:{pairs:4,timerMult:1,pts:10,penalty:3,wrongAllowed:6,label:'Fácil'},
+medio:{pairs:6,timerMult:1.25,pts:15,penalty:5,wrongAllowed:4,label:'Médio'},
+dificil:{pairs:8,timerMult:1.5,pts:20,penalty:8,wrongAllowed:2,label:'Difícil'}
+};
+const POWERUPS={
+dica:{label:'💡 Dica',desc:'Destaca um item por 5s'},
+congelador:{label:'❄️ Congelar',desc:'Para o timer por 10s'},
+multiplicador:{label:'✨ Multiplicar',desc:'Próximo acerto vale o dobro'},
+vidas:{label:'❤️ +1 Vida',desc:'Ganha uma tentativa extra'}
+};
+const ACHS={
+perfeicao:{icon:'💎',label:'Perfeição',desc:'Sem erros nas 7 fases'},
+velocista:{icon:'⚡',label:'Velocista',desc:'Menos de 4 minutos'},
+colecionador:{icon:'🎒',label:'Colecionador',desc:'Usou 10+ power-ups'},
+desafiante:{icon:'🔥',label:'Desafiante',desc:'Completou no Difícil'},
+acertador:{icon:'🎯',label:'Acertador',desc:'3+ acertos seguidos'},
+multiplicador_ach:{icon:'✨',label:'Multiplicador',desc:'20+ pts de bônus com ×2'},
+geografo:{icon:'🌍',label:'Geógrafo',desc:'Bandeiras sem erros'},
+historiador:{icon:'📜',label:'Historiador',desc:'Guerra sem erros'},
+detetive:{icon:'🔍',label:'Detetive',desc:'Achou todas as palavras'},
+feminismo:{icon:'🌸',label:'Heroínas',desc:'Encontrou 5+ mulheres'}
+};
+
+let gs={};let savedData=[];let advanceLock=false;
+
+function loadData(){try{const d=localStorage.getItem('combina_v8');if(d)savedData=JSON.parse(d)}catch(e){savedData=[]}}
+function saveData(){try{localStorage.setItem('combina_v8',JSON.stringify(savedData))}catch(e){}}
+
+function selectDiff(d,el){gs.difficulty=d;document.querySelectorAll('.diff-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected')}
+
+function showScreen(id){
+document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none'});
+const el=document.getElementById(id);el.style.display='flex';setTimeout(()=>el.classList.add('active'),10);
+if(id==='screen-ranking')renderRanking('facil');
+}
+
+function startGame(){
+const name=document.getElementById('player-name').value.trim();
+if(!name){notify('Por favor, insira seu nome!','error');return}
+advanceLock=false;
+gs={name,difficulty:gs.difficulty||'facil',score:0,phase:0,elapsed:0,
+timerInterval:null,startTime:Date.now(),selected:[null,null],
+inventory:{dica:0,congelador:0,multiplicador:0,vidas:0},
+activePU:null,consecutive:0,totalPUsUsed:0,bonusFromMultiplier:0,
+wrongTotal:0,phaseWrongs:0,phaseWrongAllowed:0,
+hintTimeout:null,freezeTimeout:null,isFrozen:false,multiplierActive:false,
+phasePairs:[],phaseLeft:[],phaseRight:[],phaseMatched:0,phaseTotal:0,
+allPerfect:true,flagPerfect:true,guerraPerfect:true,
+wsFound:[],wsPlaced:[],wsFoundFemale:0,flagSel:null,
+guerraSelected:null,guerraPlaced:{}};
+loadPhase(0);showScreen('screen-game');startTimer();
+}
+
+function resetGame(){if(gs.timerInterval)clearInterval(gs.timerInterval);advanceLock=false;}
+
+function startTimer(){
+if(gs.timerInterval)clearInterval(gs.timerInterval);
+gs.startTime=Date.now()-gs.elapsed*1000;
+gs.timerInterval=setInterval(()=>{
+if(gs.isFrozen)return;
+gs.elapsed=(Date.now()-gs.startTime)/1000*DIFF_CFG[gs.difficulty].timerMult;
+updateTimerDisplay();
+},200);
+}
+
+function updateTimerDisplay(){
+const t=Math.floor(gs.elapsed);const m=Math.floor(t/60);const s=t%60;
+const el=document.getElementById('timer-display');
+el.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+el.className=gs.isFrozen?'timer-paused':'';
+}
+
+function loadPhase(idx){
+advanceLock=false;
+const ph=PHASES[idx];
+const cfg=DIFF_CFG[gs.difficulty];
+gs.phaseMatched=0;gs.phaseWrongs=0;gs.phaseWrongAllowed=cfg.wrongAllowed;
+gs.selected=[null,null];gs.flagSel=null;gs.multiplierActive=false;
+gs.guerraSelected=null;gs.guerraPlaced={};
+document.getElementById('multiplier-banner').style.display='none';
+document.getElementById('phase-title').textContent=`${idx+1}. ${ph.title}`;
+document.getElementById('phase-num').textContent=idx+1;
+
+if(ph.type==='match'){
+document.getElementById('phase-desc').textContent=ph.desc;
+const shuffled=[...ph.pairs].sort(()=>Math.random()-.5);
+const count=Math.min(cfg.pairs,ph.pairs.length);
+const sel=shuffled.slice(0,count);
+gs.phasePairs=sel;gs.phaseLeft=sel.map(p=>p[0]);
+gs.phaseRight=[...sel.map(p=>p[1])].sort(()=>Math.random()-.5);
+gs.phaseTotal=sel.length;
+renderMatchPhase();
+}else if(ph.type==='guerra'){
+document.getElementById('phase-desc').textContent=ph.desc;
+renderGuerraPhase();
+}else if(ph.type==='flags'){
+const count=DIFF_FLAGS[gs.difficulty];
+document.getElementById('phase-desc').textContent=`Clique na bandeira e depois no nome — ${count} países nesta rodada`;
+const shuffled=[...FLAG_PAIRS_FULL].sort(()=>Math.random()-.5);
+gs.phasePairs=shuffled.slice(0,count);gs.phaseTotal=count;
+gs.phaseWrongAllowed=gs.difficulty==='facil'?8:gs.difficulty==='medio'?6:4;
+renderFlagsPhase();
+}else if(ph.type==='wordsearch'){
+document.getElementById('phase-desc').textContent=ph.desc;
+gs.phaseTotal=ph.words.length;gs.wsFound=[];
+initWordSearch(ph.words);
+}
+renderWrongCounter();renderPowerupBar();updateProgress(0);
+}
+
+// ── MATCH ─────────────────────────────────────────────────────────────────
+function renderMatchPhase(){
+const content=document.getElementById('game-content');
+content.innerHTML='<div class="match-area"><div class="match-col" id="left-col"></div><div class="match-col" id="right-col"></div></div>';
+gs.phaseLeft.forEach((v,i)=>{
+const el=document.createElement('div');el.className='match-item';
+el.dataset.side='left';el.dataset.value=v;el.dataset.idx=i;
+el.textContent=v;el.onclick=()=>selectItem(el);
+document.getElementById('left-col').appendChild(el);
+});
+gs.phaseRight.forEach((v,i)=>{
+const el=document.createElement('div');el.className='match-item';
+el.dataset.side='right';el.dataset.value=v;el.dataset.idx=i;
+el.textContent=v;el.onclick=()=>selectItem(el);
+document.getElementById('right-col').appendChild(el);
+});
+}
+
+function selectItem(el){
+if(el.classList.contains('matched'))return;
+const side=el.dataset.side;
+if(gs.selected[0]&&gs.selected[0].dataset.side===side){
+gs.selected[0].classList.remove('selected');gs.selected[0]=el;el.classList.add('selected');
+}else if(!gs.selected[0]){gs.selected[0]=el;el.classList.add('selected');
+}else{gs.selected[1]=el;el.classList.add('selected');checkMatch();}
+}
+
+function checkMatch(){
+const[a,b]=gs.selected;if(!a||!b){gs.selected=[null,null];return}
+const left=a.dataset.side==='left'?a:b;const right=a.dataset.side==='right'?a:b;
+const lv=left.dataset.value;const rv=right.dataset.value;
+gs.selected=[null,null];
+const correct=gs.phasePairs.find(p=>p[0]===lv&&p[1]===rv);
+if(correct){
+left.classList.add('matched');right.classList.add('matched');
+left.classList.remove('selected');right.classList.remove('selected');
+scoreCorrect();if(gs.phaseMatched>=gs.phaseTotal)setTimeout(advancePhase,500);
+}else{
+scoreWrong();
+left.classList.add('wrong');right.classList.add('wrong');
+setTimeout(()=>{left.classList.remove('wrong','selected');right.classList.remove('wrong','selected')},400);
+if(gs.phaseWrongAllowed<=0)setTimeout(()=>{notify('Fase resetada!','error');loadPhase(gs.phase)},700);
+}
+renderPowerupBar();
+}
+
+// ── EIXO VS ALIADOS ────────────────────────────────────────────────────────
+function renderGuerraPhase(){
+const n=GUERRA_DIFF[gs.difficulty].n;
+const eixoSel=[...EIXO_ALL].sort(()=>Math.random()-.5).slice(0,n);
+const aliadosSel=[...ALIADOS_ALL].sort(()=>Math.random()-.5).slice(0,n);
+gs.guerraEixo=eixoSel;gs.guerraAliados=aliadosSel;
+gs.guerraAll=[...eixoSel.map(c=>({...c,side:'eixo'})),...aliadosSel.map(c=>({...c,side:'aliados'}))].sort(()=>Math.random()-.5);
+gs.phaseTotal=gs.guerraAll.length;gs.phaseMatched=0;gs.phaseWrongs=0;
+gs.phaseWrongAllowed=gs.difficulty==='facil'?6:gs.difficulty==='medio'?4:2;
+gs.guerraPlaced={};gs.guerraSelected=null;
+
+const content=document.getElementById('game-content');content.innerHTML='';
+
+const info=document.createElement('div');info.className='guerra-info';
+info.innerHTML=`<strong style="color:var(--text)">Como jogar:</strong> Clique em um país do pool e depois clique na zona correta (🔴 Eixo ou 🔵 Aliados). A cada erro você perde pontos. Acerte todos os ${gs.phaseTotal} países!`;
+content.appendChild(info);
+
+const wrap=document.createElement('div');wrap.className='guerra-wrapper';
+
+// Zonas
+const top=document.createElement('div');top.className='guerra-top';
+
+const eixoZone=document.createElement('div');
+eixoZone.className='zona-drop eixo-zone';eixoZone.id='zona-eixo';
+eixoZone.innerHTML=`<div class="zona-title"><span style="font-size:1.3rem">🔴</span><span style="color:var(--eixo)">Eixo</span><span style="font-size:.72rem;color:var(--text2);font-weight:400">(Alemanha, Itália, Japão...)</span></div><div class="zona-tags" id="tags-eixo"></div>`;
+
+const aliadosZone=document.createElement('div');
+aliadosZone.className='zona-drop aliados-zone';aliadosZone.id='zona-aliados';
+aliadosZone.innerHTML=`<div class="zona-title"><span style="font-size:1.3rem">🔵</span><span style="color:var(--aliados)">Aliados</span><span style="font-size:.72rem;color:var(--text2);font-weight:400">(EUA, Reino Unido, URSS...)</span></div><div class="zona-tags" id="tags-aliados"></div>`;
+
+eixoZone.onclick=()=>dropToZone('eixo');
+aliadosZone.onclick=()=>dropToZone('aliados');
+top.appendChild(eixoZone);top.appendChild(aliadosZone);
+
+// Pool
+const poolWrap=document.createElement('div');
+poolWrap.innerHTML=`<div style="font-size:.78rem;color:var(--text2);margin-bottom:.5rem;text-align:center">Clique em um país → depois clique na zona correta</div>`;
+const pool=document.createElement('div');pool.className='countries-pool';pool.id='countries-pool';
+
+gs.guerraAll.forEach((c,i)=>{
+const btn=document.createElement('div');
+btn.className='pool-card';btn.dataset.idx=i;btn.dataset.name=c.name;btn.dataset.side=c.side;
+btn.innerHTML=c.name;
+btn.onclick=()=>selectPoolCard(btn);
+pool.appendChild(btn);
+});
+poolWrap.appendChild(pool);
+
+wrap.appendChild(top);wrap.appendChild(poolWrap);
+content.appendChild(wrap);
+renderWrongCounter();
+}
+
+function selectPoolCard(btn){
+if(btn.classList.contains('placed'))return;
+document.querySelectorAll('.pool-card').forEach(b=>b.classList.remove('selected-pool'));
+if(gs.guerraSelected===btn){gs.guerraSelected=null;return}
+gs.guerraSelected=btn;btn.classList.add('selected-pool');
+notify(`"${btn.dataset.name}" selecionado — clique em Eixo ou Aliados!`,'info');
+}
+
+function dropToZone(zone){
+if(!gs.guerraSelected)return;
+const btn=gs.guerraSelected;
+const correctSide=btn.dataset.side;
+const isCorrect=correctSide===zone;
+btn.classList.remove('selected-pool');gs.guerraSelected=null;
+
+if(isCorrect){
+btn.classList.add('placed');
+const tag=document.createElement('span');
+tag.className='country-tag correct';
+tag.style.background=zone==='eixo'?'#2d0a0a':'#0a0d2d';
+tag.style.border=`1px solid ${zone==='eixo'?'var(--eixo)':'var(--aliados)'}`;
+tag.style.color=zone==='eixo'?'var(--eixo)':'var(--aliados)';
+tag.textContent=btn.dataset.name;
+document.getElementById('tags-'+zone).appendChild(tag);
+scoreCorrect();
+if(gs.phaseMatched>=gs.phaseTotal)setTimeout(advancePhase,600);
+}else{
+gs.guerraPerfect=false;
+btn.classList.add('wrong-tag');
+setTimeout(()=>btn.classList.remove('wrong-tag'),400);
+scoreWrong();
+if(gs.phaseWrongAllowed<=0)setTimeout(()=>{notify('Fase resetada!','error');loadPhase(gs.phase)},700);
+}
+renderPowerupBar();
+}
+
+// ── FLAGS ──────────────────────────────────────────────────────────────────
+function renderFlagsPhase(){
+const pairs=gs.phasePairs;
+const cols=gs.difficulty==='facil'?4:gs.difficulty==='medio'?5:6;
+const content=document.getElementById('game-content');content.innerHTML='';
+const wrap=document.createElement('div');wrap.className='flags-wrapper';
+
+const t1=document.createElement('div');t1.className='flags-section-title';
+t1.style.marginBottom='.4rem';
+t1.innerHTML='🚩 Clique em uma bandeira, depois no nome do país';
+wrap.appendChild(t1);
+
+const flagGrid=document.createElement('div');flagGrid.className='flags-grid';
+flagGrid.style.gridTemplateColumns=`repeat(${cols},1fr)`;flagGrid.id='flag-grid';
+pairs.forEach((p,i)=>{
+const el=document.createElement('div');el.className='flag-card';
+el.dataset.type='flag';el.dataset.idx=i;el.dataset.emoji=p[0];el.dataset.name=p[1];
+el.innerHTML=`<span class="flag-emoji">${p[0]}</span><span class="flag-name">?</span>`;
+el.onclick=()=>flagClick(el);flagGrid.appendChild(el);
+});
+wrap.appendChild(flagGrid);
+
+const t2=document.createElement('div');t2.className='flags-section-title';
+t2.style.margin='.7rem 0 .4rem';t2.innerHTML='🌐 Nomes dos países';
+wrap.appendChild(t2);
+
+const nameGrid=document.createElement('div');nameGrid.className='flags-grid';
+nameGrid.style.gridTemplateColumns=`repeat(${cols},1fr)`;nameGrid.id='name-grid';
+const shuffledNames=[...pairs].sort(()=>Math.random()-.5);
+shuffledNames.forEach((p,i)=>{
+const el=document.createElement('div');el.className='flag-card';
+el.dataset.type='name';el.dataset.idx=i;el.dataset.emoji=p[0];el.dataset.name=p[1];
+el.style.minHeight='40px';el.style.padding='.35rem .3rem';
+el.innerHTML=`<span style="font-size:.75rem;color:var(--text);text-align:center;line-height:1.3">${p[1]}</span>`;
+el.onclick=()=>flagClick(el);nameGrid.appendChild(el);
+});
+wrap.appendChild(nameGrid);
+content.appendChild(wrap);
+}
+
+function flagClick(el){
+if(el.classList.contains('matched'))return;
+if(!gs.flagSel){gs.flagSel=el;el.classList.add('selected');return}
+if(gs.flagSel.dataset.type===el.dataset.type){gs.flagSel.classList.remove('selected');gs.flagSel=el;el.classList.add('selected');return}
+const a=gs.flagSel;const b=el;
+a.classList.remove('selected');b.classList.remove('selected');gs.flagSel=null;
+if(a.dataset.emoji===b.dataset.emoji){
+document.querySelectorAll('.flag-card').forEach(c=>{
+if(c.dataset.emoji===a.dataset.emoji){c.classList.add('matched');const n=c.querySelector('.flag-name');if(n)n.textContent=a.dataset.name||b.dataset.name;const s=c.querySelector('span');if(s&&c.dataset.type==='name')s.style.color='var(--green)';}
+});
+scoreCorrect();if(gs.phaseMatched>=gs.phaseTotal)setTimeout(advancePhase,500);
+}else{
+gs.flagPerfect=false;scoreWrong();
+a.classList.add('wrong');b.classList.add('wrong');
+setTimeout(()=>{a.classList.remove('wrong');b.classList.remove('wrong')},400);
+if(gs.phaseWrongAllowed<=0)setTimeout(()=>{notify('Fase resetada!','error');loadPhase(gs.phase)},700);
+renderPowerupBar();
+}
+}
+
+// ── SCORE HELPERS ──────────────────────────────────────────────────────────
+function scoreCorrect(){
+gs.consecutive++;
+let pts=DIFF_CFG[gs.difficulty].pts;let bonus=0;
+if(gs.multiplierActive){bonus=pts;pts*=2;gs.bonusFromMultiplier+=bonus;gs.multiplierActive=false;document.getElementById('multiplier-banner').style.display='none';}
+gs.score+=pts;document.getElementById('score-display').textContent=gs.score;
+gs.phaseMatched++;updateProgress(gs.phaseMatched/gs.phaseTotal*100);
+notify(`+${pts}${bonus?` (×2!)`:''}pts`,'success');
+checkPowerupReward();
+}
+
+function scoreWrong(){
+gs.allPerfect=false;gs.consecutive=0;
+gs.phaseWrongs++;gs.phaseWrongAllowed--;gs.wrongTotal++;
+const penalty=DIFF_CFG[gs.difficulty].penalty;
+gs.score=Math.max(0,gs.score-penalty);
+document.getElementById('score-display').textContent=gs.score;
+notify(`-${penalty}pts — Errou!`,'error');
+renderWrongCounter();
+}
+
+function advancePhase(){
+if(advanceLock)return;advanceLock=true;
+gs.phase++;
+if(gs.phase>=PHASES.length){endGame();return}
+notify(`✅ Fase ${gs.phase} concluída! Próxima...`,'success');
+setTimeout(()=>loadPhase(gs.phase),700);
+}
+
+function updateProgress(pct){document.getElementById('progress-fill').style.width=(pct||0)+'%'}
+
+function checkPowerupReward(){
+const pus=Object.keys(POWERUPS);const rand=pus[Math.floor(Math.random()*pus.length)];
+let awarded=false;
+if(gs.consecutive>0&&gs.consecutive%3===0){gs.inventory[rand]++;awarded=true;notify(`🎁 Power-up por ${gs.consecutive} acertos: ${POWERUPS[rand].label}`,'gold')}
+else if(Math.random()<.15){gs.inventory[rand]++;awarded=true;notify(`🎁 Power-up surpresa: ${POWERUPS[rand].label}`,'gold')}
+if(awarded)renderPowerupBar();
+}
+
+function renderWrongCounter(){
+const ph=PHASES[gs.phase];
+if(!ph||ph.type==='wordsearch'){document.getElementById('wrong-counter').innerHTML='';return}
+const max=gs.phaseWrongAllowed+(gs.phaseWrongs||0);
+let html='';
+for(let i=0;i<max;i++)html+=`<div class="life${i>=(gs.phaseWrongAllowed)?' lost':''}"></div>`;
+document.getElementById('wrong-counter').innerHTML=html;
+}
+
+function renderPowerupBar(){
+const bar=document.getElementById('powerup-bar');bar.innerHTML='';
+['dica','congelador','multiplicador','vidas'].forEach(k=>{
+const count=gs.inventory[k]||0;const isActive=gs.activePU===k;
+const btn=document.createElement('button');
+btn.className='pu-btn'+(isActive?' active-pu':'');
+btn.innerHTML=`${POWERUPS[k].label} <span style="background:var(--border);border-radius:8px;padding:1px 4px;font-size:.72rem">${count}</span>`;
+btn.title=POWERUPS[k].desc;btn.disabled=count===0;
+btn.onclick=()=>activatePowerup(k);bar.appendChild(btn);
+});
+}
+
+function activatePowerup(k){
+if(!gs.inventory[k]||gs.inventory[k]<=0)return;
+if(gs.activePU===k){gs.activePU=null;renderPowerupBar();return}
+gs.activePU=k;renderPowerupBar();
+if(k==='dica')triggerDica();
+else if(k==='congelador')triggerCongelador();
+else if(k==='multiplicador')triggerMultiplicador();
+else if(k==='vidas')triggerVidas();
+}
+
+function usePowerup(k){if(!gs.inventory[k]||gs.inventory[k]<=0)return false;gs.inventory[k]--;gs.activePU=null;gs.totalPUsUsed++;renderPowerupBar();return true;}
+
+function triggerDica(){
+if(!usePowerup('dica'))return;
+const ph=PHASES[gs.phase];
+if(ph.type==='guerra'){
+const unplaced=gs.guerraAll.find(c=>!document.querySelector(`.pool-card.placed[data-name="${c.name}"]`)||false);
+const poolBtns=[...document.querySelectorAll('.pool-card:not(.placed)')];
+if(poolBtns.length){
+const pick=poolBtns[Math.floor(Math.random()*poolBtns.length)];
+const side=pick.dataset.side==='eixo'?'🔴 Eixo':'🔵 Aliados';
+notify(`💡 Dica: "${pick.dataset.name}" → ${side}`,'gold');
+pick.classList.add('selected-pool');gs.guerraSelected=pick;
+}return;
+}
+if(ph.type==='wordsearch'){
+const unf=gs.wsPlaced.find(p=>!gs.wsFound.includes(p.word.clean));
+if(unf){const el=document.getElementById('wsw-'+unf.word.clean);if(el){el.style.borderColor='var(--gold)';el.style.background='#2a2000';setTimeout(()=>{if(el){el.style.borderColor='';el.style.background=''}},5000)}notify(`💡 Procure "${unf.word.word}"!`,'gold')}return;
+}
+if(ph.type==='flags'){
+const unmatched=gs.phasePairs.filter(p=>!document.querySelector(`#flag-grid .flag-card[data-emoji="${p[0]}"].matched`));
+if(!unmatched.length)return;
+const pair=unmatched[Math.floor(Math.random()*unmatched.length)];
+document.querySelectorAll('.flag-card').forEach(el=>{if(el.dataset.emoji===pair[0])el.classList.add('hint-highlight')});
+if(gs.hintTimeout)clearTimeout(gs.hintTimeout);
+gs.hintTimeout=setTimeout(()=>document.querySelectorAll('.hint-highlight').forEach(el=>el.classList.remove('hint-highlight')),5000);
+notify(`💡 Destaquei: ${pair[1]}!`,'gold');return;
+}
+const matched=[...document.querySelectorAll('#left-col .match-item.matched')].map(e=>e.dataset.value);
+const unmatched=gs.phasePairs.filter(p=>!matched.includes(p[0]));
+if(!unmatched.length)return;
+const pair=unmatched[Math.floor(Math.random()*unmatched.length)];
+if(gs.hintTimeout)clearTimeout(gs.hintTimeout);
+document.querySelectorAll('.match-item').forEach(el=>{if(el.dataset.value===pair[0]||el.dataset.value===pair[1])el.classList.add('hint-highlight')});
+gs.hintTimeout=setTimeout(()=>document.querySelectorAll('.hint-highlight').forEach(el=>el.classList.remove('hint-highlight')),5000);
+notify('💡 Par destacado por 5s!','gold');
+}
+
+function triggerCongelador(){
+if(!usePowerup('congelador'))return;
+gs.isFrozen=true;document.getElementById('timer-pill').style.background='#002a2a';
+if(gs.freezeTimeout)clearTimeout(gs.freezeTimeout);
+gs.freezeTimeout=setTimeout(()=>{gs.isFrozen=false;gs.startTime=Date.now()-gs.elapsed*1000;document.getElementById('timer-pill').style.background='';notify('❄️ Timer retomado!','info')},10000);
+notify('❄️ Timer congelado por 10s!','info');
+}
+
+function triggerMultiplicador(){if(!usePowerup('multiplicador'))return;gs.multiplierActive=true;document.getElementById('multiplier-banner').style.display='block';notify('✨ Multiplicador ativo!','gold');}
+function triggerVidas(){if(!usePowerup('vidas'))return;gs.phaseWrongAllowed++;renderWrongCounter();notify('❤️ +1 tentativa extra!','success');}
+
+function normalize(w){return w.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase()}
+
+function initWordSearch(wordDefs){
+const ROWS=16;const COLS=20;
+const grid=Array.from({length:ROWS},()=>Array(COLS).fill(''));
+const dirs=[[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+const alpha='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const cleanWords=wordDefs.map(w=>({...w,clean:normalize(w.word)}));
+const placed=[];
+cleanWords.forEach(wd=>{
+const w=wd.clean;let ok=false;
+for(let attempt=0;attempt<400&&!ok;attempt++){
+const d=dirs[Math.floor(Math.random()*dirs.length)];
+const rMin=d[0]<0?w.length-1:0;const rMax=ROWS-1-(d[0]>0?w.length-1:0);
+const cMin=d[1]<0?w.length-1:0;const cMax=COLS-1-(d[1]>0?w.length-1:0);
+if(rMax<rMin||cMax<cMin)continue;
+const r=rMin+Math.floor(Math.random()*(rMax-rMin+1));
+const c=cMin+Math.floor(Math.random()*(cMax-cMin+1));
+let can=true;
+for(let i=0;i<w.length&&can;i++){const nr=r+d[0]*i;const nc=c+d[1]*i;if(nr<0||nr>=ROWS||nc<0||nc>=COLS||(grid[nr][nc]!==''&&grid[nr][nc]!==w[i]))can=false;}
+if(can){for(let i=0;i<w.length;i++)grid[r+d[0]*i][c+d[1]*i]=w[i];placed.push({word:wd,r,c,dr:d[0],dc:d[1]});ok=true;}
+}
+});
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c]==='')grid[r][c]=alpha[Math.floor(Math.random()*alpha.length)];
+gs.wsGrid=grid;gs.wsPlaced=placed;gs.wsWords=cleanWords;gs.wsFound=[];gs.wsSelecting=false;gs.wsStart=null;gs.wsCurrent=[];
+const content=document.getElementById('game-content');content.innerHTML='';
+const wrap=document.createElement('div');wrap.className='ws-wrapper';
+const gridDiv=document.createElement('div');gridDiv.className='ws-grid-wrap';
+const gridEl=document.createElement('div');gridEl.id='ws-grid';gridEl.style.display='inline-block';
+for(let r=0;r<ROWS;r++){
+const row=document.createElement('div');row.className='ws-row';
+for(let c=0;c<COLS;c++){const cell=document.createElement('div');cell.className='ws-cell';cell.textContent=grid[r][c];cell.dataset.r=r;cell.dataset.c=c;cell.addEventListener('mousedown',wsDown);cell.addEventListener('mouseover',wsOver);row.appendChild(cell);}
+gridEl.appendChild(row);
+}
+document.addEventListener('mouseup',wsUp);
+gridDiv.appendChild(gridEl);
+const listDiv=document.createElement('div');listDiv.className='ws-word-list';
+listDiv.innerHTML=`<div style="font-size:.78rem;font-weight:700;margin-bottom:.6rem;color:var(--text)">🔍 Personalidades<br><span style="font-size:.65rem;color:var(--purple);font-weight:400">🌸 = mulher</span></div>`;
+cleanWords.forEach(wd=>{
+const d=document.createElement('div');d.className='ws-word';d.id='wsw-'+wd.clean;
+const g=wd.f?'<span style="font-size:.6rem;background:#2a1535;border:1px solid var(--purple);color:var(--purple);border-radius:4px;padding:1px 4px;margin-left:3px">🌸</span>':'';
+d.innerHTML=`<strong>${wd.word}${g}</strong><span class="role">${wd.role}</span>`;
+listDiv.appendChild(d);
+});
+wrap.appendChild(gridDiv);wrap.appendChild(listDiv);content.appendChild(wrap);
+}
+
+function wsDown(e){const el=e.currentTarget;gs.wsSelecting=true;gs.wsStart={r:+el.dataset.r,c:+el.dataset.c};gs.wsCurrent=[];clearWSSelecting();el.classList.add('selecting');gs.wsCurrent=[el];}
+function wsOver(e){if(!gs.wsSelecting||!gs.wsStart)return;clearWSSelecting();const el=e.currentTarget;gs.wsCurrent=getLineCells(gs.wsStart,{r:+el.dataset.r,c:+el.dataset.c});gs.wsCurrent.forEach(c=>c.classList.add('selecting'));}
+function wsUp(){if(!gs.wsSelecting)return;gs.wsSelecting=false;if(gs.wsCurrent.length>0)checkWS(gs.wsCurrent.map(c=>c.textContent).join(''),gs.wsCurrent);clearWSSelecting();gs.wsStart=null;gs.wsCurrent=[];}
+function clearWSSelecting(){document.querySelectorAll('.ws-cell.selecting').forEach(c=>c.classList.remove('selecting'))}
+function getLineCells(start,end){
+const dr=Math.sign(end.r-start.r);const dc=Math.sign(end.c-start.c);
+if(dr===0&&dc===0){const row=document.querySelector(`#ws-grid .ws-row:nth-child(${start.r+1})`);if(!row)return[];const cell=row.querySelector(`.ws-cell:nth-child(${start.c+1})`);return cell?[cell]:[];}
+const len=Math.max(Math.abs(end.r-start.r),Math.abs(end.c-start.c));const cells=[];
+for(let i=0;i<=len;i++){const nr=start.r+dr*i;const nc=start.c+dc*i;const row=document.querySelector(`#ws-grid .ws-row:nth-child(${nr+1})`);if(row){const cell=row.querySelector(`.ws-cell:nth-child(${nc+1})`);if(cell)cells.push(cell)}}
+return cells;
+}
+function checkWS(word,cells){
+const w=normalize(word);const rev=w.split('').reverse().join('');
+const found=gs.wsPlaced.find(p=>!gs.wsFound.includes(p.word.clean)&&(p.word.clean===w||p.word.clean===rev));
+if(found){
+gs.wsFound.push(found.word.clean);cells.forEach(c=>c.classList.add('found'));
+const listEl=document.getElementById('wsw-'+found.word.clean);if(listEl)listEl.classList.add('found');
+if(found.word.f)gs.wsFoundFemale=(gs.wsFoundFemale||0)+1;
+let pts=DIFF_CFG[gs.difficulty].pts;
+if(gs.multiplierActive){gs.bonusFromMultiplier+=pts;pts*=2;gs.multiplierActive=false;document.getElementById('multiplier-banner').style.display='none';}
+gs.score+=pts;document.getElementById('score-display').textContent=gs.score;
+gs.phaseMatched++;updateProgress(gs.phaseMatched/gs.phaseTotal*100);
+gs.consecutive++;checkPowerupReward();
+notify(`✅ ${found.word.word}${found.word.f?' 🌸':''}! +${pts}pts`,'success');
+if(gs.phaseMatched>=gs.phaseTotal)setTimeout(advancePhase,700);
+}
+}
+
+function calcAchievements(t){
+const earned=[];
+if(gs.allPerfect)earned.push('perfeicao');
+if(t<240)earned.push('velocista');
+if(gs.totalPUsUsed>=10)earned.push('colecionador');
+if(gs.difficulty==='dificil')earned.push('desafiante');
+if(gs.consecutive>=3)earned.push('acertador');
+if(gs.bonusFromMultiplier>=20)earned.push('multiplicador_ach');
+if(gs.flagPerfect)earned.push('geografo');
+if(gs.guerraPerfect)earned.push('historiador');
+if(gs.wsFound&&gs.wsPlaced&&gs.wsFound.length>=gs.wsPlaced.length&&gs.wsPlaced.length>0)earned.push('detetive');
+if((gs.wsFoundFemale||0)>=5)earned.push('feminismo');
+return earned;
+}
+
+function renderEndAchievements(earned){
+const el=document.getElementById('end-achievements');el.innerHTML='';
+Object.entries(ACHS).forEach(([k,a])=>{
+const got=earned.includes(k);
+el.innerHTML+=`<div class="ach-card${got?' earned':''}"><div class="ach-icon" style="opacity:${got?1:.3}">${a.icon}</div><div style="font-weight:500;font-size:.76rem">${a.label}</div><div style="color:var(--text2);font-size:.68rem;margin-top:2px">${a.desc}</div></div>`;
+});
+}
+
+function endGame(){
+clearInterval(gs.timerInterval);
+const t=Math.floor(gs.elapsed);const m=Math.floor(t/60);const s=t%60;
+const achievements=calcAchievements(t);
+const rec={name:gs.name,score:gs.score,time:gs.elapsed,difficulty:gs.difficulty,achievements,date:Date.now()};
+loadData();
+const idx=savedData.findIndex(r=>r.name===gs.name&&r.difficulty===gs.difficulty);
+if(idx>=0){if(rec.score>savedData[idx].score||(rec.score===savedData[idx].score&&rec.time<savedData[idx].time))savedData[idx]=rec}
+else savedData.push(rec);
+saveData();
+document.getElementById('end-player-name').textContent=`${gs.name} — ${DIFF_CFG[gs.difficulty].label}`;
+document.getElementById('end-score').textContent=gs.score;
+document.getElementById('end-time').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+renderEndAchievements(achievements);showScreen('screen-end');
+}
+
+let rankTab='facil';
+function switchRankTab(d,el){rankTab=d;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderRanking(d)}
+function renderRanking(diff){
+loadData();
+const list=savedData.filter(r=>r.difficulty===diff).sort((a,b)=>b.score-a.score||(a.time-b.time));
+const el=document.getElementById('leaderboard-list');
+if(!list.length){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:2rem">Nenhum jogador ainda.</div>';return}
+el.innerHTML='';
+const medals=['🥇','🥈','🥉'];
+list.slice(0,15).forEach((r,i)=>{
+const t=Math.floor(r.time);const m=Math.floor(t/60);const s=t%60;
+const achHtml=(r.achievements||[]).map(a=>ACHS[a]?`<span title="${ACHS[a].label}">${ACHS[a].icon}</span>`:'').join('');
+const isMe=r.name===gs.name&&r.difficulty===diff;
+el.innerHTML+=`<div class="leaderboard-row${isMe?' me':''}"><span>${medals[i]||i+1}</span><div><div style="font-weight:500;font-size:.85rem">${r.name} ${achHtml}</div><div style="font-size:.72rem;color:var(--text2)">${m}:${s.toString().padStart(2,'0')} · ${DIFF_CFG[diff].label}</div></div><span style="font-weight:700;color:var(--accent)">${r.score}</span></div>`;
+});
+}
+
+function notify(msg,type){
+const el=document.createElement('div');
+el.className=`notif notif-${type==='gold'?'gold':type==='success'?'success':type==='error'?'error':'info'}`;
+el.textContent=msg;document.body.appendChild(el);
+setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .4s';setTimeout(()=>el.remove(),400)},2500);
+}
+
+loadData();showScreen('screen-start');gs.difficulty='facil';
+</script>
