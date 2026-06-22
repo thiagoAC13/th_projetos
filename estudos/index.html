@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="">
+    <title>Plano de Estudos Pomodoro</title>
+    <style>
+           * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-image: url('img/1.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center center;
+            background-size: cover;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        /* CRONÔMETRO */
+        .timer-section {
+
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .timer-display {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .timer-label {
+            font-size: 20px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            padding: 15px 20px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .timer-btn.start {
+            background: #343434;
+            color: white;
+        }
+
+        .timer-btn.pause {
+            background: #470000;
+            color: white;
+        }
+
+        .timer-btn.reset {
+            background: #343434;
+            color: white;
+        }
+
+        .timer-btn.skip {
+            background: #301934;
+            color: white;
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .timer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .timer-session {
+            margin-top: 20px;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.Leitura { background-color:#6EF02D;}
+        .stat-card.python { background-color: #F67A28; }
+        .stat-card.git { background-color: #AE6F7B; }
+        .stat-card.ingles { background-color: #4599D9; }
+        .stat-card.matematica { background-color: #FFF;}
+
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            color: black;
+        }
+
+        img{
+            width: 70px;
+            height: 70px;
+        }
+
+        .day-container {
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+
+        .day-header {
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-blocks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .block {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        }
+
+        .block::before {
+            content: '🍅';
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            font-size: 1.2em;
+        }
+
+        .block.Leitura { background-color: #6EF02D; }
+        .block.python { background-color: #F67A28; }
+        .block.git { background-color:#AE6F7B; }
+        .block.ingles { background-color: #4599D9;}
+        .block.matematica { background-color: #FFF; }
+
+        .block.active {
+            animation: pulse 2s infinite;
+            border: 3px solid #fff;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .block-number {
+            font-size: 0.8em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            color: black;
+        }
+
+        .block-subject {
+            font-size: 1.1em;
+            color:black ;
+        }
+
+        .block-time {
+            font-size: 0.8em;
+            opacity: 0.9;
+            margin-top: 5px;
+            color: black;
+        }
+
+        .pause {
+            background:#F0EAD6;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85em;
+            border: 2px dashed #ddd;
+        }
+
+        .pause.long {
+            background: #fff3cd;
+            border-color: #ffc107;
+            font-weight: 600;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .tips {
+            background-image: url('img/3.png');
+            background-size: cover;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+        }
+
+        .tips h3 {
+            color: #fafafa;
+            margin-bottom: 15px;
+        }
+
+        .tips ul {
+            list-style-position: inside;
+            color: #fff;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 768px) {
+            .day-blocks {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .timer-display {
+                font-size: 3em;
+            }
+        }
+
+        /* Notificação */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #FFF;">📚 Plano de Estudos Semanal</h1>
+        <p style="color: #FFF;" class="subtitle">Técnica Pomodoro - 7 blocos por dia (3 horas) • Segunda a Sexta</p>
+
+        <!-- CRONÔMETRO POMODORO -->
+        <div class="timer-section">
+            <div class="timer-label" id="timerLabel">Pronto para começar?</div>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+            <div class="timer-session" id="sessionInfo">Sessão 1 de 7</div>
+            <div class="timer-controls">
+                <button class="timer-btn start" id="startBtn" onclick="startTimer()">▶️ Iniciar</button>
+                <button class="timer-btn pause" id="pauseBtn" onclick="pauseTimer()" disabled>⏸️ Pausar</button>
+                <button class="timer-btn reset" onclick="resetTimer()">🔄 Reiniciar</button>
+                <button class="timer-btn skip" onclick="skipSession()">⏭️ Pular</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card python">
+              <img src="img/python.png" alt="">
+              <div class="stat-label">PYTHON<br></div>
+            </div>
+            <div class="stat-card Leitura">
+               <img src="img/leitura.png" alt="">
+               <div class="stat-label">LEITURA<br></div>
+            </div>
+            <div class="stat-card git">
+                <img src="img/git.png" alt="">
+                <div class="stat-label">Git e GitHub<br></div>
+            </div>
+            <div class="stat-card ingles">
+                <img src="img/ingles.png" alt="">
+                <div class="stat-label">INGLÊS<br></div>
+            </div>
+            <div class="stat-card matematica">
+               <img src="img/matematica1.png" alt="">
+                <div class="stat-label">MATEMÁTICA<br></div>
+            </div>
+        </div>
+
+        <!-- Segunda-feira -->
+        <div class="day-container">
+            <div class="day-header">
+                <span>Segunda-feira</span>
+                <span>7 blocos (3 horas)</span>
+            </div>
+            <div class="day-blocks">
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 1</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 2</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 3</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block git" data-subject="git"><div class="block-number">Bloco 4</div><div class="block-subject">Git e Github</div><div class="block-time">25 min</div></div>
+                <div class="pause long">☕ Pausa 15 min</div>
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 5</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block ingles" data-subject="Inglês"><div class="block-number">Bloco 6</div><div class="block-subject">Inglês</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block matematica" data-subject="Matemática"><div class="block-number">Bloco 7</div><div class="block-subject">Matemática</div><div class="block-time">25 min</div></div>
+            </div>
+        </div>
+
+        <!-- Terça-feira -->
+        <div class="day-container">
+            <div class="day-header">
+                <span>Terça-feira</span>
+                <span>7 blocos (3 horas)</span>
+            </div>
+            <div class="day-blocks">
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 1</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 2</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block ingles" data-subject="Inglês"><div class="block-number">Bloco 3</div><div class="block-subject">Inglês</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block git" data-subject="git"><div class="block-number">Bloco 4</div><div class="block-subject">Git e Github</div><div class="block-time">25 min</div></div>
+                <div class="pause long">☕ Pausa 15 min</div>
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 5</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 6</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block matematica" data-subject="Matemática"><div class="block-number">Bloco 7</div><div class="block-subject">Matemática</div><div class="block-time">25 min</div></div>
+            </div>
+        </div>
+
+        <!-- Quarta-feira -->
+        <div class="day-container">
+            <div class="day-header">
+                <span>Quarta-feira</span>
+                <span>7 blocos (3 horas)</span>
+            </div>
+            <div class="day-blocks">
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 1</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 2</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block git" data-subject="git"><div class="block-number">Bloco 3</div><div class="block-subject">Git e Github</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 4</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause long">☕ Pausa 15 min</div>
+                <div class="block ingles" data-subject="Inglês"><div class="block-number">Bloco 5</div><div class="block-subject">Inglês</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 6</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block matematica" data-subject="Matemática"><div class="block-number">Bloco 7</div><div class="block-subject">Matemática</div><div class="block-time">25 min</div></div>
+            </div>
+        </div>
+
+        <!-- Quinta-feira -->
+        <div class="day-container">
+            <div class="day-header">
+                <span>Quinta-feira</span>
+                <span>7 blocos (3 horas)</span>
+            </div>
+            <div class="day-blocks">
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 1</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 2</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block git" data-subject="git"><div class="block-number">Bloco 3</div><div class="block-subject">Português</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block ingles" data-subject="Inglês"><div class="block-number">Bloco 4</div><div class="block-subject">Inglês</div><div class="block-time">25 min</div></div>
+                <div class="pause long">☕ Pausa 15 min</div>
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 5</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block portugues" data-subject="git"><div class="block-number">Bloco 6</div><div class="block-subject">Git e Github</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block matematica" data-subject="Matemática"><div class="block-number">Bloco 7</div><div class="block-subject">Matemática</div><div class="block-time">25 min</div></div>
+            </div>
+        </div>
+
+        <!-- Sexta-feira -->
+        <div class="day-container">
+            <div class="day-header">
+                <span>Sexta-feira</span>
+                <span>7 blocos (3 horas)</span>
+            </div>
+            <div class="day-blocks">
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 1</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 2</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block Leitura" data-subject="Leitura"><div class="block-number">Bloco 3</div><div class="block-subject">Leitura</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block git" data-subject="git"><div class="block-number">Bloco 4</div><div class="block-subject">Git e Github</div><div class="block-time">25 min</div></div>
+                <div class="pause long">☕ Pausa 15 min</div>
+                <div class="block python" data-subject="Python"><div class="block-number">Bloco 5</div><div class="block-subject">Python</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block ingles" data-subject="Inglês"><div class="block-number">Bloco 6</div><div class="block-subject">Inglês</div><div class="block-time">25 min</div></div>
+                <div class="pause">⏸️ Pausa 5 min</div>
+                <div class="block matematica" data-subject="Matemática"><div class="block-number">Bloco 7</div><div class="block-subject">Matemática</div><div class="block-time">25 min</div></div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color Leitura"></div>
+                <span><strong>Leitura</strong> (Prioridade Máxima)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color python"></div>
+                <span><strong>Python</strong> (Prioridade Alta)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color git"></div>
+                <span><strong>Git e Github</strong> (Prioridade Alta)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color ingles"></div>
+                <span><strong>Inglês</strong> (Prioridade Média)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color matematica"></div>
+                <span><strong>Matemática</strong> (Prioridade Média)</span>
+            </div>
+        </div>
+
+        <div class="tips">
+            <h3>💡 Como Usar o Cronômetro Pomodoro</h3>
+            <ul>
+                <li><strong>1. Clique "Iniciar":</strong> O timer de 25 minutos começa</li>
+                <li><strong>2. Foque totalmente:</strong> Estude sem distrações até o alarme tocar</li>
+                <li><strong>3. Faça a pausa:</strong> O cronômetro automaticamente inicia a pausa</li>
+                <li><strong>4. Repita:</strong> Continue até completar os 7 blocos do dia</li>
+                <li><strong>Dica:</strong> Clique nos blocos coloridos para ver qual matéria estudar</li>
+                <li><strong>Som:</strong> O navegador vai tocar um som quando acabar cada sessão</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Notificação -->
+    <div class="notification" id="notification">
+        <h3>🎉 Sessão Concluída!</h3>
+        <p id="notificationText"></p>
+    </div>
+
+    <script>
+        let timeLeft = 25 * 60; // 25 minutos em segundos
+        let timerInterval = null;
+        let isRunning = false;
+        let isPaused = false;
+        let isStudySession = true;
+        let currentSession = 1;
+        const totalSessions = 7;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerLabel = document.getElementById('timerLabel');
+        const sessionInfo = document.getElementById('sessionInfo');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (isRunning && !isPaused) return;
+
+            isRunning = true;
+            isPaused = false;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+
+            if (isStudySession) {
+                timerLabel.textContent = '📚 Estudando - Foco Total!';
+                highlightCurrentBlock();
+            } else {
+                timerLabel.textContent = timeLeft > 300 ? '☕ Pausa Longa - Descanse!' : '⏸️ Pausa - Relaxe!';
+            }
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    playSound();
+                    handleSessionEnd();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isPaused = true;
+            clearInterval(timerInterval);
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            timerLabel.textContent = '⏸️ Pausado';
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            isPaused = false;
+            isStudySession = true;
+            currentSession = 1;
+            timeLeft = 25 * 60;
+            updateDisplay();
+            timerLabel.textContent = 'Pronto para começar?';
+            sessionInfo.textContent = `Sessão ${currentSession} de ${totalSessions}`;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            removeAllHighlights();
+        }
+
+        function skipSession() {
+            if (!isRunning) {
+                alert('Inicie o timer primeiro!');
+                return;
+            }
+            clearInterval(timerInterval);
+            handleSessionEnd();
+        }
+
+        function handleSessionEnd() {
+            if (isStudySession) {
+                showNotification(`Bloco ${currentSession} concluído! Hora da pausa.`);
+                
+                // Determinar tempo de pausa
+                if (currentSession === 4) {
+                    timeLeft = 15 * 60; // Pausa longa de 15 min
+                } else {
+                    timeLeft = 5 * 60; // Pausa curta de 5 min
+                }
+                
+                isStudySession = false;
+                removeAllHighlights();
+            } else {
+                currentSession++;
+                
+                if (currentSession > totalSessions) {
+                    showNotification('🎉 Parabéns! Você completou todas as 7 sessões de hoje!');
+                    resetTimer();
+                    return;
+                }
+                
+                showNotification(`Pausa concluída! Vamos para o Bloco ${currentSession}.`);
+                timeLeft = 25 * 60;
+                isStudySession = true;
+            }
+
+            sessionInfo.textContent = `Sessão ${currentSession} de ${totalSessions}`;
+            updateDisplay();
+            isRunning = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+
+        function playSound() {
+            // Toca um beep usando Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function showNotification(message) {
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function highlightCurrentBlock() {
+            removeAllHighlights();
+            const blocks = document.querySelectorAll('.block');
+            const studyBlocks = Array.from(blocks).filter(b => b.dataset.subject);
+            if (studyBlocks[currentSession - 1]) {
+                studyBlocks[currentSession - 1].classList.add('active');
+            }
+        }
+
+        function removeAllHighlights() {
+            document.querySelectorAll('.block').forEach(b => b.classList.remove('active'));
+        }
+
+        // Click nos blocos para info
+        document.querySelectorAll('.block').forEach(block => {
+            if (block.dataset.subject) {
+                block.addEventListener('click', () => {
+                    alert(`📚 Matéria: ${block.dataset.subject}\n⏱️ Tempo: 25 minutos\n🍅 Técnica Pomodoro ativa!`);
+                });
+            }
+        });
+
+        // Inicializar
+        updateDisplay();
+    </script>
+</body>
+</html>

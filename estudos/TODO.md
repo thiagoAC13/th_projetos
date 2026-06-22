@@ -1,0 +1,6 @@
+- [ ] Criar pasta do MVP: dbz_dragao_web/
+- [ ] Criar dbz_dragao_web/game_data.js com dados hardcoded das 7 fases
+- [ ] Criar dbz_dragao_web/styles.css com layout/UI
+- [ ] Criar dbz_dragao_web/game.js com lógica: estados, matching, fase 7 caça-palavras, vidas/erros, power-ups, pontuação, timer, esferas/Shenlong placeholder
+- [ ] Criar dbz_dragao_web/index.html para iniciar o jogo
+- [ ] Validar executando o HTML no navegador e garantindo que todas as 7 fases funcionam e que power-ups/bonus e reinício por erro funcionam
