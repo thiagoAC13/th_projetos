@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha Carteira</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e11;
+    --surface: #16161a;
+    --card: #1c1c22;
+    --border: #2a2a35;
+    --gold: #d4a853;
+    --gold-light: #f0c870;
+    --gold-dim: rgba(212,168,83,0.12);
+    --green: #4ecb71;
+    --green-dim: rgba(78,203,113,0.12);
+    --red: #e05c5c;
+    --red-dim: rgba(224,92,92,0.12);
+    --blue: #5b8af5;
+    --blue-dim: rgba(91,138,245,0.12);
+    --purple: #a67bf5;
+    --purple-dim: rgba(166,123,245,0.12);
+    --text: #f0eff4;
+    --text-muted: #7a7a8a;
+    --text-dim: #4a4a5a;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  header {
+    padding: 2rem 2.5rem 1rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(14,14,17,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo span { color: var(--gold); }
+
+  .header-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .45rem 1rem;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-muted);
+    transition: all .2s ease;
+    position: relative;
+  }
+  .btn-export:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+  .btn-export svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .btn-restart {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .45rem 1rem;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(224,92,92,0.3);
+    background: var(--red-dim);
+    color: var(--red);
+    transition: all .2s ease;
+  }
+  .btn-restart:hover { background: var(--red); color: #fff; border-color: var(--red); }
+  .btn-restart svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .btn-import {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .45rem 1rem;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(91,138,245,0.3);
+    background: var(--blue-dim);
+    color: var(--blue);
+    transition: all .2s ease;
+  }
+  .btn-import:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .btn-import svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* Import drop zone */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--blue);
+    background: var(--blue-dim);
+  }
+  .drop-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-zone-icon { font-size: 2rem; margin-bottom: .4rem; }
+  .drop-zone-label { font-size: 0.83rem; color: var(--text-muted); }
+  .drop-zone-sub { font-size: 0.72rem; color: var(--text-dim); margin-top: .25rem; }
+
+  .import-preview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .9rem 1rem;
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .import-preview-row { display: flex; justify-content: space-between; padding: .2rem 0; color: var(--text-muted); }
+  .import-preview-row strong { color: var(--text); font-family: 'DM Mono', monospace; }
+
+  /* Export dropdown */
+  .export-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    min-width: 170px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    overflow: hidden;
+    z-index: 200;
+    animation: slideIn .18s ease;
+  }
+  .export-option {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .7rem 1rem;
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    transition: background .15s, color .15s;
+  }
+  .export-option:hover { background: var(--surface); color: var(--text); }
+  .export-option .opt-icon { font-size: 1rem; width: 20px; text-align: center; }
+  .export-sep { height: 1px; background: var(--border); margin: .2rem 0; }
+
+  .app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ─── SUMMARY STRIP ─── */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .sum-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s ease;
+  }
+  .sum-card:hover { transform: translateY(-2px); }
+  .sum-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .sum-card.green::before { background: var(--green); }
+  .sum-card.gold::before  { background: var(--gold); }
+  .sum-card.blue::before  { background: var(--blue); }
+  .sum-card.red::before   { background: var(--red); }
+  .sum-card.purple::before { background: var(--purple); }
+
+  .sum-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-muted);
+    margin-bottom: .5rem;
+  }
+  .sum-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .sum-card.green .sum-value { color: var(--green); }
+  .sum-card.gold .sum-value  { color: var(--gold); }
+  .sum-card.blue .sum-value  { color: var(--blue); }
+  .sum-card.red .sum-value   { color: var(--red); }
+  .sum-card.purple .sum-value { color: var(--purple); }
+
+  /* ─── SALDO HERO ─── */
+  .balance-hero {
+    background: linear-gradient(135deg, #1a1a20 0%, #1c1c28 100%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-hero::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,168,83,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .balance-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text-muted);
+    margin-bottom: .4rem;
+  }
+  .balance-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .balance-negative { color: var(--red) !important; }
+  .balance-sub {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: .4rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .balance-formula {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+  .formula-line { display: flex; align-items: center; gap: .5rem; }
+  .formula-line .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ─── GRID ─── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* ─── SECTION CARD ─── */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+  }
+  .section-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: .01em;
+  }
+  .section-body { padding: 1.2rem 1.5rem; }
+
+  /* ─── FORM ─── */
+  .form-row { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: .75rem; }
+  .form-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 120px; }
+  label { font-size: 0.72rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+  input, select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .6rem .85rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .2s;
+    width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--gold); }
+  input::placeholder { color: var(--text-dim); }
+  select option { background: var(--card); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .6rem 1.2rem;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .2s ease;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--gold); color: #0e0e11; }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-sm { padding: .35rem .75rem; font-size: 0.78rem; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--border); color: var(--text); }
+  .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid transparent; }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-pay { background: var(--green-dim); color: var(--green); border: 1px solid var(--border); }
+  .btn-pay:hover { background: var(--green); color: #0e0e11; }
+
+  /* ─── LIST ─── */
+  .entries { margin-top: 1rem; display: flex; flex-direction: column; gap: .6rem; max-height: 280px; overflow-y: auto; }
+  .entries::-webkit-scrollbar { width: 4px; }
+  .entries::-webkit-scrollbar-track { background: transparent; }
+  .entries::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    animation: slideIn .25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .entry-left { flex: 1; min-width: 0; }
+  .entry-desc {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .entry-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: .15rem; font-family: 'DM Mono', monospace; }
+  .entry-right { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+  .entry-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .amount-green { color: var(--green); }
+  .amount-red { color: var(--red); }
+  .amount-gold { color: var(--gold); }
+  .amount-blue { color: var(--blue); }
+
+  .empty-state {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+  }
+
+  /* Debt progress */
+  .debt-progress {
+    margin-top: .5rem;
+    background: var(--border);
+    border-radius: 99px;
+    height: 4px;
+    overflow: hidden;
+  }
+  .debt-progress-bar {
+    height: 100%;
+    background: var(--green);
+    border-radius: 99px;
+    transition: width .5s ease;
+  }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 380px;
+    animation: modalIn .25s ease;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+  .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 1rem; }
+  .modal-actions { display: flex; gap: .75rem; margin-top: 1.5rem; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .75rem 1.1rem;
+    font-size: 0.85rem;
+    z-index: 300;
+    animation: toastIn .3s ease;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+  /* ─── BADGE ─── */
+  .badge {
+    display: inline-flex;
+    padding: .15rem .5rem;
+    border-radius: 99px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .badge-gold { background: var(--gold-dim); color: var(--gold); }
+  .badge-green { background: var(--green-dim); color: var(--green); }
+
+  .section-total {
+    margin-top: .75rem;
+    padding-top: .75rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .section-total strong { font-family: 'DM Mono', monospace; font-size: 0.9rem; }
+
+  @media (max-width: 600px) {
+    header { padding: 1.2rem 1rem .8rem; }
+    .app { padding: 1.2rem 1rem 3rem; }
+    .grid { grid-template-columns: 1fr; }
+    .balance-hero { flex-direction: column; }
+    .form-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Minha <span>Carteira</span></div>
+  <div class="header-right">
+    <div class="header-date" id="headerDate"></div>
+    <div style="position:relative">
+      <button class="btn-export" id="exportBtn" onclick="toggleExport(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Exportar
+      </button>
+      <div class="export-dropdown" id="exportMenu" style="display:none">
+        <button class="export-option" onclick="exportJSON()"><span class="opt-icon">📄</span> JSON (backup)</button>
+        <button class="export-option" onclick="exportCSV()"><span class="opt-icon">📊</span> CSV (planilha)</button>
+        <div class="export-sep"></div>
+        <button class="export-option" onclick="exportTXT()"><span class="opt-icon">📋</span> Relatório TXT</button>
+      </div>
+    </div>
+
+    <button class="btn-import" onclick="openImportModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 5 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Importar
+    </button>
+
+    <button class="btn-restart" onclick="openRestartModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="1 4 1 10 7 10"/>
+        <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+      </svg>
+      Novo Mês
+    </button>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- SALDO HERO -->
+  <div class="balance-hero">
+    <div>
+      <div class="balance-label">Saldo disponível</div>
+      <div class="balance-amount" id="heroBalance">R$ 0,00</div>
+      <div class="balance-sub" id="heroSub">Ganhos − Dízimo − Investimentos − Pagamentos</div>
+    </div>
+    <div class="balance-formula" id="formula">
+      <div class="formula-line"><span class="dot" style="background:var(--green)"></span><span id="f-ganhos">Ganhos: R$ 0,00</span></div>
+      <div class="formula-line"><span class="dot" style="background:var(--gold)"></span><span id="f-dizimo">Dízimo: R$ 0,00</span></div>
+      <div class="formula-line"><span class="dot" style="background:var(--blue)"></span><span id="f-invest">Investido: R$ 0,00</span></div>
+      <div class="formula-line"><span class="dot" style="background:var(--red)"></span><span id="f-debts">Pagamentos: R$ 0,00</span></div>
+    </div>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="summary">
+    <div class="sum-card green">
+      <div class="sum-label">Total Ganhos</div>
+      <div class="sum-value" id="s-ganhos">R$ 0,00</div>
+    </div>
+    <div class="sum-card gold">
+      <div class="sum-label">Dízimo (10%)</div>
+      <div class="sum-value" id="s-dizimo">R$ 0,00</div>
+    </div>
+    <div class="sum-card blue">
+      <div class="sum-label">Investimentos</div>
+      <div class="sum-value" id="s-invest">R$ 0,00</div>
+    </div>
+    <div class="sum-card red">
+      <div class="sum-label">Dívidas em aberto</div>
+      <div class="sum-value" id="s-dividas">R$ 0,00</div>
+    </div>
+    <div class="sum-card purple">
+      <div class="sum-label">Pagamentos feitos</div>
+      <div class="sum-value" id="s-pagamentos">R$ 0,00</div>
+    </div>
+  </div>
+
+  <!-- GRID DE SEÇÕES -->
+  <div class="grid">
+
+    <!-- GANHOS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:var(--green-dim)">💰</div>
+          <h2>Ganhos</h2>
+        </div>
+        <span class="badge badge-green">+receita</span>
+      </div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Descrição / Fonte</label>
+            <input type="text" id="g-desc" placeholder="Ex: Freelance design">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="g-valor" placeholder="0,00" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="g-data">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="addGanho()">+ Registrar Ganho</button>
+        <div class="entries" id="ganhos-list"></div>
+        <div class="section-total">
+          <span>Total ganhos</span>
+          <strong id="ganhos-total" style="color:var(--green)">R$ 0,00</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVESTIMENTOS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:var(--blue-dim)">📈</div>
+          <h2>Investimentos</h2>
+        </div>
+        <span class="badge" style="background:var(--blue-dim);color:var(--blue)">reserva</span>
+      </div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Onde / Descrição</label>
+            <input type="text" id="i-desc" placeholder="Ex: Tesouro Direto">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="i-valor" placeholder="0,00" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="i-data">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;background:var(--blue);color:#fff" onclick="addInvestimento()">+ Reservar Investimento</button>
+        <div class="entries" id="invest-list"></div>
+        <div class="section-total">
+          <span>Total investido</span>
+          <strong id="invest-total" style="color:var(--blue)">R$ 0,00</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- DÍZIMO -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:var(--gold-dim)">🙏</div>
+          <h2>Dízimo</h2>
+        </div>
+        <span class="badge badge-gold">10% auto</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.6">O dízimo é calculado automaticamente como <strong style="color:var(--gold)">10%</strong> de cada ganho registrado e descontado do saldo disponível.</p>
+
+        <button id="btn-pagar-dizimo" class="btn btn-primary" style="width:100%;background:var(--gold);color:#0e0e11;display:none;margin-bottom:.75rem" onclick="pagarDizimo()">🙏 Pagar Dízimo</button>
+
+        <div id="dizimo-status" style="display:none;align-items:center;gap:.6rem;background:var(--green-dim);border:1px solid var(--green);border-radius:var(--radius-sm);padding:.65rem 1rem;margin-bottom:.75rem;font-size:0.83rem;color:var(--green)">
+          ✓ <span>Dízimo pago! Novo dízimo será gerado nas próximas entradas.</span>
+        </div>
+
+        <div class="entries" id="dizimo-list"></div>
+        <div class="section-total">
+          <span>A pagar</span>
+          <strong id="dizimo-total" style="color:var(--gold)">R$ 0,00</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- DÍVIDAS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-icon" style="background:var(--red-dim)">💳</div>
+          <h2>Dívidas</h2>
+        </div>
+        <span class="badge" style="background:var(--red-dim);color:var(--red)">passivo</span>
+      </div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" id="d-desc" placeholder="Ex: Cartão de crédito">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Valor total (R$)</label>
+            <input type="number" id="d-valor" placeholder="0,00" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="d-data">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;background:var(--red);color:#fff" onclick="addDivida()">+ Registrar Dívida</button>
+        <div class="entries" id="dividas-list"></div>
+        <div class="section-total">
+          <span>Em aberto</span>
+          <strong id="dividas-total" style="color:var(--red)">R$ 0,00</strong>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DE PAGAMENTO -->
+<div class="modal-overlay" id="payModal" style="display:none">
+  <div class="modal">
+    <h3>Registrar Pagamento</h3>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.2rem" id="pay-info"></p>
+    <div class="form-group">
+      <label>Valor do pagamento (R$)</label>
+      <input type="number" id="pay-valor" placeholder="0,00" min="0" step="0.01">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closePayModal()">Cancelar</button>
+      <button class="btn btn-pay" style="flex:1" onclick="confirmPay()">✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE EXCLUSÃO -->
+<div class="modal-overlay" id="delModal" style="display:none">
+  <div class="modal">
+    <h3>Confirmar exclusão</h3>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem" id="del-info">Tem certeza que deseja excluir este registro?</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeDelModal()">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" onclick="confirmDel()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE IMPORTAÇÃO -->
+<div class="modal-overlay" id="importModal" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <div style="text-align:center;margin-bottom:1.2rem">
+      <div style="font-size:2.2rem;margin-bottom:.4rem">📥</div>
+      <h3 style="font-size:1.2rem">Importar Dados</h3>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:.3rem">Carregue um arquivo JSON exportado anteriormente</p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="importFile" accept=".json" onchange="handleFileSelect(this.files[0])">
+      <div class="drop-zone-icon">📄</div>
+      <div class="drop-zone-label">Clique ou arraste o arquivo JSON aqui</div>
+      <div class="drop-zone-sub">Apenas arquivos .json exportados por esta carteira</div>
+    </div>
+
+    <div class="import-preview" id="importPreview">
+      <div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.6rem">📋 Dados encontrados</div>
+      <div class="import-preview-row"><span>Ganhos</span><strong id="prev-ganhos">—</strong></div>
+      <div class="import-preview-row"><span>Investimentos</span><strong id="prev-invest">—</strong></div>
+      <div class="import-preview-row"><span>Dívidas</span><strong id="prev-dividas">—</strong></div>
+      <div class="import-preview-row"><span>Dízimo pago</span><strong id="prev-dizimo">—</strong></div>
+      <div class="import-preview-row"><span>Exportado em</span><strong id="prev-data" style="font-size:0.75rem">—</strong></div>
+    </div>
+
+    <div id="import-error" style="display:none;background:var(--red-dim);border:1px solid rgba(224,92,92,.3);border-radius:var(--radius-sm);padding:.7rem .9rem;font-size:0.82rem;color:var(--red);margin-bottom:1rem"></div>
+
+    <div style="background:var(--gold-dim);border:1px solid rgba(212,168,83,.2);border-radius:var(--radius-sm);padding:.7rem .9rem;font-size:0.78rem;color:var(--gold);margin-bottom:1.2rem">
+      ⚠️ A importação <strong>substituirá</strong> todos os dados atuais. Exporte antes se quiser manter o mês atual.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeImportModal()">Cancelar</button>
+      <button class="btn" id="btn-confirm-import" style="flex:1;background:var(--blue);color:#fff;opacity:.4;pointer-events:none" onclick="confirmImport()">✓ Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE NOVO MÊS -->
+<div class="modal-overlay" id="restartModal" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <div style="text-align:center;margin-bottom:1.2rem">
+      <div style="font-size:2.5rem;margin-bottom:.5rem">🔄</div>
+      <h3 style="font-size:1.3rem">Iniciar Novo Mês</h3>
+    </div>
+
+    <div style="background:var(--red-dim);border:1px solid rgba(224,92,92,.3);border-radius:var(--radius-sm);padding:.9rem 1rem;margin-bottom:1.2rem;font-size:0.82rem;color:var(--red);line-height:1.6">
+      ⚠️ <strong>Atenção:</strong> Esta ação apaga todos os ganhos, investimentos e registros do mês atual. As dívidas podem ser mantidas ou zeradas.
+    </div>
+
+    <div style="background:var(--gold-dim);border:1px solid rgba(212,168,83,.25);border-radius:var(--radius-sm);padding:.9rem 1rem;margin-bottom:1.4rem;font-size:0.82rem;color:var(--gold);line-height:1.6">
+      💡 <strong>Recomendado:</strong> Exporte seus dados antes de continuar.
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap">
+        <button class="btn btn-sm" style="background:var(--gold);color:#0e0e11;font-size:0.75rem" onclick="exportCSV();void(0)">📊 Exportar CSV</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:0.75rem" onclick="exportTXT();void(0)">📋 Exportar TXT</button>
+      </div>
+    </div>
+
+    <div style="font-size:0.83rem;color:var(--text-muted);margin-bottom:.8rem;font-weight:500">O que deseja fazer com as dívidas?</div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
+      <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;padding:.7rem .9rem;border:1px solid var(--border);border-radius:var(--radius-sm);transition:border-color .2s" id="lbl-manter" onclick="selectDebt('manter')">
+        <input type="radio" name="debt-opt" value="manter" id="opt-manter" checked style="margin-top:2px;accent-color:var(--blue);width:auto">
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;color:var(--text)">Manter dívidas em aberto</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:.2rem">Dívidas não quitadas passam para o próximo mês</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;padding:.7rem .9rem;border:1px solid var(--border);border-radius:var(--radius-sm);transition:border-color .2s" id="lbl-zerar" onclick="selectDebt('zerar')">
+        <input type="radio" name="debt-opt" value="zerar" id="opt-zerar" style="margin-top:2px;accent-color:var(--red);width:auto">
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;color:var(--text)">Zerar todas as dívidas</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:.2rem">Remove todos os registros de dívida (pago ou não)</div>
+        </div>
+      </label>
+    </div>
+
+    <div style="font-size:0.78rem;color:var(--text-dim);text-align:center;margin-bottom:1rem">
+      Digite <strong style="color:var(--text-muted);font-family:'DM Mono',monospace">NOVO MÊS</strong> para confirmar
+    </div>
+    <input type="text" id="restart-confirm" placeholder="NOVO MÊS" style="text-align:center;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:1rem" oninput="checkRestartInput()">
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeRestartModal()">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1;opacity:.4;pointer-events:none" id="btn-confirm-restart" onclick="confirmRestart()">🔄 Reiniciar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+let state = {
+  ganhos: [],
+  investimentos: [],
+  dividas: [],
+  dizimoPago: 0   // acumulado já pago
+};
+
+function load() {
+  try {
+    const saved = localStorage.getItem('mc_state');
+    if (saved) state = JSON.parse(saved);
+  } catch(e) {}
+}
+function save() {
+  localStorage.setItem('mc_state', JSON.stringify(state));
+}
+
+// ─── FORMAT ─────────────────────────────────────────────────────────────────
+function brl(v) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+function fmtDate(str) {
+  if (!str) return '';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ─── TOTALS ─────────────────────────────────────────────────────────────────
+function totals() {
+  const ganhos = state.ganhos.reduce((a,g)=>a+g.valor,0);
+  const dizimoTotal = ganhos * 0.1;
+  const dizimoPago = state.dizimoPago || 0;
+  const dizimoDevido = Math.max(0, dizimoTotal - dizimoPago); // pendente a pagar
+  const invest = state.investimentos.reduce((a,i)=>a+i.valor,0);
+  const divTotal = state.dividas.reduce((a,d)=>a+d.valor,0);
+  const pagamentos = state.dividas.reduce((a,d)=>a+d.pago,0);
+  // saldo desconta o dizimo TOTAL (pago ou não), pois já saiu do bolso
+  const saldo = ganhos - dizimoTotal - invest - pagamentos;
+  return { ganhos, dizimoTotal, dizimoPago, dizimoDevido, invest, divTotal, pagamentos, saldo };
+}
+
+// ─── RENDER SUMMARY ─────────────────────────────────────────────────────────
+function renderSummary() {
+  const t = totals();
+  document.getElementById('heroBalance').textContent = brl(t.saldo);
+  document.getElementById('heroBalance').className = 'balance-amount' + (t.saldo < 0 ? ' balance-negative' : '');
+  document.getElementById('f-ganhos').textContent = `Ganhos: ${brl(t.ganhos)}`;
+  document.getElementById('f-dizimo').textContent = `Dízimo: ${brl(t.dizimoTotal)}`;
+  document.getElementById('f-invest').textContent = `Investido: ${brl(t.invest)}`;
+  document.getElementById('f-debts').textContent = `Pagamentos: ${brl(t.pagamentos)}`;
+  document.getElementById('s-ganhos').textContent = brl(t.ganhos);
+  document.getElementById('s-dizimo').textContent = brl(t.dizimoTotal);
+  document.getElementById('s-invest').textContent = brl(t.invest);
+  document.getElementById('s-dividas').textContent = brl(t.divTotal - t.pagamentos < 0 ? 0 : t.divTotal - t.pagamentos);
+  document.getElementById('s-pagamentos').textContent = brl(t.pagamentos);
+  document.getElementById('ganhos-total').textContent = brl(t.ganhos);
+  document.getElementById('dizimo-total').textContent = brl(t.dizimoDevido);
+  document.getElementById('invest-total').textContent = brl(t.invest);
+  document.getElementById('dividas-total').textContent = brl(Math.max(0, t.divTotal - t.pagamentos));
+
+  // Botão pagar dízimo
+  const btnPagar = document.getElementById('btn-pagar-dizimo');
+  const statusDiv = document.getElementById('dizimo-status');
+  if (t.dizimoDevido > 0) {
+    btnPagar.style.display = 'flex';
+    btnPagar.textContent = `🙏 Pagar Dízimo — ${brl(t.dizimoDevido)}`;
+    statusDiv.style.display = 'none';
+  } else if (t.dizimoTotal > 0) {
+    btnPagar.style.display = 'none';
+    statusDiv.style.display = 'flex';
+  } else {
+    btnPagar.style.display = 'none';
+    statusDiv.style.display = 'none';
+  }
+}
+
+// ─── RENDER GANHOS ───────────────────────────────────────────────────────────
+function renderGanhos() {
+  const el = document.getElementById('ganhos-list');
+  if (!state.ganhos.length) { el.innerHTML = '<div class="empty-state">Nenhum ganho registrado</div>'; return; }
+  el.innerHTML = state.ganhos.map(g => `
+    <div class="entry">
+      <div class="entry-left">
+        <div class="entry-desc">${esc(g.desc)}</div>
+        <div class="entry-meta">${fmtDate(g.data)} · Dízimo: ${brl(g.valor*0.1)}</div>
+      </div>
+      <div class="entry-right">
+        <span class="entry-amount amount-green">${brl(g.valor)}</span>
+        <button class="btn btn-sm btn-ghost" onclick="askDel('ganho','${g.id}','${esc(g.desc)}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── RENDER DIZIMO ───────────────────────────────────────────────────────────
+function renderDizimo() {
+  const el = document.getElementById('dizimo-list');
+  const t = totals();
+  if (!state.ganhos.length) { el.innerHTML = '<div class="empty-state">Nenhum dízimo calculado ainda</div>'; return; }
+  const pago = t.dizimoPago;
+  let acumulado = 0;
+  el.innerHTML = state.ganhos.map(g => {
+    const val = g.valor * 0.1;
+    acumulado += val;
+    const estePago = acumulado <= pago;
+    return `
+      <div class="entry" style="${estePago ? 'opacity:.5' : ''}">
+        <div class="entry-left">
+          <div class="entry-desc">10% de: ${esc(g.desc)}${estePago ? ' <span style="color:var(--green);font-size:.75rem">✓ Pago</span>' : ''}</div>
+          <div class="entry-meta">${fmtDate(g.data)}</div>
+        </div>
+        <div class="entry-right">
+          <span class="entry-amount" style="color:${estePago ? 'var(--green)' : 'var(--gold)'}">${brl(val)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── RENDER INVEST ───────────────────────────────────────────────────────────
+function renderInvest() {
+  const el = document.getElementById('invest-list');
+  if (!state.investimentos.length) { el.innerHTML = '<div class="empty-state">Nenhum investimento registrado</div>'; return; }
+  el.innerHTML = state.investimentos.map(i => `
+    <div class="entry">
+      <div class="entry-left">
+        <div class="entry-desc">${esc(i.desc)}</div>
+        <div class="entry-meta">${fmtDate(i.data)}</div>
+      </div>
+      <div class="entry-right">
+        <span class="entry-amount amount-blue">${brl(i.valor)}</span>
+        <button class="btn btn-sm btn-ghost" onclick="askDel('investimento','${i.id}','${esc(i.desc)}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── RENDER DIVIDAS ──────────────────────────────────────────────────────────
+function renderDividas() {
+  const el = document.getElementById('dividas-list');
+  if (!state.dividas.length) { el.innerHTML = '<div class="empty-state">Nenhuma dívida registrada</div>'; return; }
+  el.innerHTML = state.dividas.map(d => {
+    const resto = Math.max(0, d.valor - d.pago);
+    const pct = Math.min(100, (d.pago / d.valor) * 100);
+    const quitada = resto === 0;
+    return `
+      <div class="entry" style="${quitada ? 'opacity:.55' : ''}">
+        <div class="entry-left" style="flex:1">
+          <div class="entry-desc">${esc(d.desc)}${quitada ? ' <span style="color:var(--green);font-size:.75rem">✓ Quitada</span>' : ''}</div>
+          <div class="entry-meta">${fmtDate(d.data)} · Pago: ${brl(d.pago)} de ${brl(d.valor)}</div>
+          <div class="debt-progress"><div class="debt-progress-bar" style="width:${pct}%"></div></div>
+        </div>
+        <div class="entry-right">
+          <span class="entry-amount amount-red">${brl(resto)}</span>
+          ${!quitada ? `<button class="btn btn-sm btn-pay" onclick="openPayModal('${d.id}')">Pagar</button>` : ''}
+          <button class="btn btn-sm btn-ghost" onclick="askDel('divida','${d.id}','${esc(d.desc)}')">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAll() {
+  renderGanhos();
+  renderDizimo();
+  renderInvest();
+  renderDividas();
+  renderSummary();
+}
+
+// ─── PAGAR DÍZIMO ────────────────────────────────────────────────────────────
+function pagarDizimo() {
+  const t = totals();
+  if (t.dizimoDevido <= 0) { toast('✓ Dízimo já está pago!', 'gold'); return; }
+  state.dizimoPago = t.dizimoTotal; // marca tudo como pago
+  save(); renderAll();
+  toast(`🙏 Dízimo de ${brl(t.dizimoDevido)} pago! Que Deus abençoe.`, 'gold');
+}
+
+// ─── ADD GANHO ───────────────────────────────────────────────────────────────
+function addGanho() {
+  const desc = document.getElementById('g-desc').value.trim();
+  const valor = parseFloat(document.getElementById('g-valor').value);
+  const data = document.getElementById('g-data').value;
+  if (!desc || !valor || valor <= 0) { toast('⚠️ Preencha descrição e valor', 'red'); return; }
+  state.ganhos.unshift({ id: uid(), desc, valor, data: data || today() });
+  save(); renderAll();
+  document.getElementById('g-desc').value = '';
+  document.getElementById('g-valor').value = '';
+  toast(`💰 Ganho de ${brl(valor)} registrado! Dízimo: ${brl(valor*0.1)}`, 'green');
+}
+
+// ─── ADD INVESTIMENTO ────────────────────────────────────────────────────────
+function addInvestimento() {
+  const desc = document.getElementById('i-desc').value.trim();
+  const valor = parseFloat(document.getElementById('i-valor').value);
+  const data = document.getElementById('i-data').value;
+  if (!desc || !valor || valor <= 0) { toast('⚠️ Preencha descrição e valor', 'red'); return; }
+  const t = totals();
+  if (valor > t.saldo) { toast('⚠️ Saldo insuficiente para este investimento', 'red'); return; }
+  state.investimentos.unshift({ id: uid(), desc, valor, data: data || today() });
+  save(); renderAll();
+  document.getElementById('i-desc').value = '';
+  document.getElementById('i-valor').value = '';
+  toast(`📈 ${brl(valor)} reservado para investimento`, 'blue');
+}
+
+// ─── ADD DIVIDA ──────────────────────────────────────────────────────────────
+function addDivida() {
+  const desc = document.getElementById('d-desc').value.trim();
+  const valor = parseFloat(document.getElementById('d-valor').value);
+  const data = document.getElementById('d-data').value;
+  if (!desc || !valor || valor <= 0) { toast('⚠️ Preencha descrição e valor', 'red'); return; }
+  state.dividas.unshift({ id: uid(), desc, valor, pago: 0, data: data || today() });
+  save(); renderAll();
+  document.getElementById('d-desc').value = '';
+  document.getElementById('d-valor').value = '';
+  toast(`💳 Dívida de ${brl(valor)} registrada`, 'red');
+}
+
+// ─── PAGAMENTO ───────────────────────────────────────────────────────────────
+let payId = null;
+function openPayModal(id) {
+  payId = id;
+  const d = state.dividas.find(x => x.id === id);
+  const resto = d.valor - d.pago;
+  document.getElementById('pay-info').textContent = `"${d.desc}" · Restante: ${brl(resto)}`;
+  document.getElementById('pay-valor').value = '';
+  document.getElementById('payModal').style.display = 'flex';
+}
+function closePayModal() {
+  document.getElementById('payModal').style.display = 'none';
+  payId = null;
+}
+function confirmPay() {
+  const v = parseFloat(document.getElementById('pay-valor').value);
+  const d = state.dividas.find(x => x.id === payId);
+  if (!v || v <= 0) { toast('⚠️ Informe o valor do pagamento', 'red'); return; }
+  const t = totals();
+  if (v > t.saldo) { toast('⚠️ Saldo insuficiente', 'red'); return; }
+  const resto = d.valor - d.pago;
+  if (v > resto) { toast(`⚠️ Valor maior que o restante (${brl(resto)})`, 'red'); return; }
+  d.pago += v;
+  save(); renderAll(); closePayModal();
+  toast(`✓ Pagamento de ${brl(v)} registrado`, 'green');
+}
+
+// ─── DELETE ──────────────────────────────────────────────────────────────────
+let delTarget = null;
+function askDel(tipo, id, desc) {
+  delTarget = { tipo, id };
+  document.getElementById('del-info').textContent = `Excluir "${desc}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('delModal').style.display = 'flex';
+}
+function closeDelModal() { document.getElementById('delModal').style.display = 'none'; delTarget = null; }
+function confirmDel() {
+  if (!delTarget) return;
+  const { tipo, id } = delTarget;
+  if (tipo === 'ganho') state.ganhos = state.ganhos.filter(x => x.id !== id);
+  else if (tipo === 'investimento') state.investimentos = state.investimentos.filter(x => x.id !== id);
+  else if (tipo === 'divida') state.dividas = state.dividas.filter(x => x.id !== id);
+  save(); renderAll(); closeDelModal();
+  toast('🗑️ Registro excluído', 'gold');
+}
+
+// ─── IMPORTAR ────────────────────────────────────────────────────────────────
+let importData = null;
+
+function openImportModal() {
+  importData = null;
+  document.getElementById('importFile').value = '';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('import-error').style.display = 'none';
+  document.getElementById('btn-confirm-import').style.opacity = '.4';
+  document.getElementById('btn-confirm-import').style.pointerEvents = 'none';
+  document.getElementById('dropZone').querySelector('.drop-zone-icon').textContent = '📄';
+  document.getElementById('dropZone').querySelector('.drop-zone-label').textContent = 'Clique ou arraste o arquivo JSON aqui';
+  document.getElementById('importModal').style.display = 'flex';
+  document.getElementById('exportMenu').style.display = 'none';
+
+  // drag and drop
+  const dz = document.getElementById('dropZone');
+  dz.ondragover = e => { e.preventDefault(); dz.classList.add('drag-over'); };
+  dz.ondragleave = () => dz.classList.remove('drag-over');
+  dz.ondrop = e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFileSelect(f);
+  };
+}
+function closeImportModal() {
+  document.getElementById('importModal').style.display = 'none';
+  importData = null;
+}
+
+function handleFileSelect(file) {
+  const errEl = document.getElementById('import-error');
+  errEl.style.display = 'none';
+  if (!file) return;
+  if (!file.name.endsWith('.json')) {
+    errEl.textContent = '❌ Arquivo inválido. Selecione um .json exportado por esta carteira.';
+    errEl.style.display = 'block'; return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Validação mínima
+      if (!Array.isArray(data.ganhos) || !Array.isArray(data.investimentos) || !Array.isArray(data.dividas)) {
+        throw new Error('Estrutura inválida');
+      }
+      importData = data;
+      // Preview
+      document.getElementById('prev-ganhos').textContent = `${data.ganhos.length} registro(s) — ${brl(data.ganhos.reduce((a,g)=>a+g.valor,0))}`;
+      document.getElementById('prev-invest').textContent = `${data.investimentos.length} registro(s) — ${brl(data.investimentos.reduce((a,i)=>a+i.valor,0))}`;
+      document.getElementById('prev-dividas').textContent = `${data.dividas.length} registro(s)`;
+      document.getElementById('prev-dizimo').textContent = brl(data.dizimoPago || 0);
+      document.getElementById('prev-data').textContent = data.exportado_em ? new Date(data.exportado_em).toLocaleString('pt-BR') : '—';
+      document.getElementById('importPreview').style.display = 'block';
+      document.getElementById('dropZone').querySelector('.drop-zone-icon').textContent = '✅';
+      document.getElementById('dropZone').querySelector('.drop-zone-label').textContent = file.name;
+      const btn = document.getElementById('btn-confirm-import');
+      btn.style.opacity = '1';
+      btn.style.pointerEvents = 'auto';
+    } catch {
+      errEl.textContent = '❌ Arquivo inválido ou corrompido. Use um JSON exportado por esta carteira.';
+      errEl.style.display = 'block';
+      document.getElementById('importPreview').style.display = 'none';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmImport() {
+  if (!importData) return;
+  state.ganhos        = importData.ganhos        || [];
+  state.investimentos = importData.investimentos  || [];
+  state.dividas       = importData.dividas        || [];
+  state.dizimoPago    = importData.dizimoPago     || 0;
+  save(); renderAll(); closeImportModal();
+  toast('📥 Dados importados com sucesso!', 'blue');
+}
+
+// ─── NOVO MÊS / RESTART ─────────────────────────────────────────────────────
+function openRestartModal() {
+  document.getElementById('restart-confirm').value = '';
+  document.getElementById('btn-confirm-restart').style.opacity = '.4';
+  document.getElementById('btn-confirm-restart').style.pointerEvents = 'none';
+  document.getElementById('opt-manter').checked = true;
+  selectDebt('manter');
+  document.getElementById('restartModal').style.display = 'flex';
+  document.getElementById('exportMenu').style.display = 'none';
+}
+function closeRestartModal() {
+  document.getElementById('restartModal').style.display = 'none';
+}
+function selectDebt(opt) {
+  document.getElementById('lbl-manter').style.borderColor = opt === 'manter' ? 'var(--blue)' : 'var(--border)';
+  document.getElementById('lbl-zerar').style.borderColor  = opt === 'zerar'  ? 'var(--red)'  : 'var(--border)';
+}
+function checkRestartInput() {
+  const val = document.getElementById('restart-confirm').value.trim().toUpperCase();
+  const btn = document.getElementById('btn-confirm-restart');
+  const ok = val === 'NOVO MÊS';
+  btn.style.opacity = ok ? '1' : '.4';
+  btn.style.pointerEvents = ok ? 'auto' : 'none';
+}
+function confirmRestart() {
+  const manterDividas = document.getElementById('opt-manter').checked;
+  const mes = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+  // Guarda histórico do mês no localStorage antes de limpar
+  const historico = JSON.parse(localStorage.getItem('mc_historico') || '[]');
+  historico.unshift({
+    mes,
+    exportado_em: new Date().toISOString(),
+    resumo: totals(),
+    ganhos: state.ganhos,
+    investimentos: state.investimentos,
+    dividas: state.dividas
+  });
+  localStorage.setItem('mc_historico', JSON.stringify(historico.slice(0, 24)));
+
+  // Reinicia estado
+  state.ganhos = [];
+  state.investimentos = [];
+  state.dizimoPago = 0;
+  if (!manterDividas) {
+    state.dividas = [];
+  } else {
+    // mantém só as não quitadas, zerando os pagamentos para o novo mês
+    state.dividas = state.dividas
+      .filter(d => d.valor > d.pago)
+      .map(d => ({ ...d, pago: 0 }));
+  }
+
+  save(); renderAll(); closeRestartModal();
+  toast(`🎉 Novo mês iniciado! Histórico de ${mes} salvo.`, 'green');
+}
+
+// ─── EXPORT ──────────────────────────────────────────────────────────────────
+function toggleExport(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('exportMenu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', () => {
+  const menu = document.getElementById('exportMenu');
+  if (menu) menu.style.display = 'none';
+});
+
+function download(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportJSON() {
+  const t = totals();
+  const payload = { exportado_em: new Date().toISOString(), resumo: t, ...state };
+  download(`minha-carteira-${today()}.json`, JSON.stringify(payload, null, 2), 'application/json');
+  document.getElementById('exportMenu').style.display = 'none';
+  toast('📄 Backup JSON exportado!', 'gold');
+}
+
+function exportCSV() {
+  const rows = [];
+  rows.push(['Tipo','Descrição','Valor','Pago','Restante','Data']);
+  state.ganhos.forEach(g => rows.push(['Ganho', g.desc, g.valor.toFixed(2), '', '', g.data]));
+  state.ganhos.forEach(g => rows.push(['Dízimo', '10% de: ' + g.desc, (g.valor*0.1).toFixed(2), '', '', g.data]));
+  state.investimentos.forEach(i => rows.push(['Investimento', i.desc, i.valor.toFixed(2), '', '', i.data]));
+  state.dividas.forEach(d => rows.push(['Dívida', d.desc, d.valor.toFixed(2), d.pago.toFixed(2), Math.max(0,d.valor-d.pago).toFixed(2), d.data]));
+  const t = totals();
+  rows.push([]);
+  rows.push(['RESUMO','','','','','']);
+  rows.push(['Total Ganhos','',t.ganhos.toFixed(2),'','','']);
+  rows.push(['Dízimo Total','',t.dizimoTotal.toFixed(2),'','','']);
+  rows.push(['Dízimo Pago','',t.dizimoPago.toFixed(2),'','','']);
+  rows.push(['Dízimo Pendente','',t.dizimoDevido.toFixed(2),'','','']);
+  rows.push(['Total Investido','',t.invest.toFixed(2),'','','']);
+  rows.push(['Dívidas em aberto','',(Math.max(0,t.divTotal-t.pagamentos)).toFixed(2),'','','']);
+  rows.push(['Saldo Disponível','',t.saldo.toFixed(2),'','','']);
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  download(`minha-carteira-${today()}.csv`, '\uFEFF' + csv, 'text/csv;charset=utf-8');
+  document.getElementById('exportMenu').style.display = 'none';
+  toast('📊 CSV exportado! Abra no Excel ou Google Sheets', 'blue');
+}
+
+function exportTXT() {
+  const t = totals();
+  const now = new Date().toLocaleString('pt-BR');
+  const line = '─'.repeat(48);
+  let txt = `MINHA CARTEIRA — RELATÓRIO FINANCEIRO\n`;
+  txt += `Gerado em: ${now}\n${line}\n\n`;
+
+  txt += `SALDO DISPONÍVEL: ${brl(t.saldo)}\n`;
+  txt += `${line}\n`;
+  txt += `  Ganhos totais   : ${brl(t.ganhos)}\n`;
+  txt += `  Dízimo (10%)    : ${brl(t.dizimoTotal)}  (pago: ${brl(t.dizimoPago)} / pendente: ${brl(t.dizimoDevido)})\n`;
+  txt += `  Investimentos   : ${brl(t.invest)}\n`;
+  txt += `  Pagtos de dívida: ${brl(t.pagamentos)}\n\n`;
+
+  txt += `GANHOS (${state.ganhos.length})\n${line}\n`;
+  if (!state.ganhos.length) txt += '  Nenhum\n';
+  state.ganhos.forEach(g => txt += `  ${fmtDate(g.data)}  ${g.desc.padEnd(24)} ${brl(g.valor)}  (dízimo: ${brl(g.valor*0.1)})\n`);
+
+  txt += `\nINVESTIMENTOS (${state.investimentos.length})\n${line}\n`;
+  if (!state.investimentos.length) txt += '  Nenhum\n';
+  state.investimentos.forEach(i => txt += `  ${fmtDate(i.data)}  ${i.desc.padEnd(24)} ${brl(i.valor)}\n`);
+
+  txt += `\nDÍVIDAS (${state.dividas.length})\n${line}\n`;
+  if (!state.dividas.length) txt += '  Nenhuma\n';
+  state.dividas.forEach(d => {
+    const resto = Math.max(0, d.valor - d.pago);
+    const status = resto === 0 ? '✓ QUITADA' : `Restante: ${brl(resto)}`;
+    txt += `  ${fmtDate(d.data)}  ${d.desc.padEnd(24)} Total: ${brl(d.valor)}  Pago: ${brl(d.pago)}  ${status}\n`;
+  });
+
+  txt += `\n${line}\nMinha Carteira · minha-carteira.html\n`;
+  download(`relatorio-${today()}.txt`, txt, 'text/plain;charset=utf-8');
+  document.getElementById('exportMenu').style.display = 'none';
+  toast('📋 Relatório TXT exportado!', 'green');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function toast(msg, type='green') {
+  const colors = { green: 'var(--green)', red: 'var(--red)', blue: 'var(--blue)', gold: 'var(--gold)' };
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeftColor = colors[type] || colors.green;
+  el.style.borderLeftWidth = '3px';
+  el.innerHTML = `<span>${msg}</span>`;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.animation = 'toastOut .3s ease forwards'; setTimeout(() => el.remove(), 300); }, 2800);
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function today() { return new Date().toISOString().slice(0,10); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ─── HEADER DATE ─────────────────────────────────────────────────────────────
+function setHeaderDate() {
+  const now = new Date();
+  document.getElementById('headerDate').textContent =
+    now.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+// Set today's date as default
+[['g-data'],['i-data'],['d-data']].forEach(([id]) => {
+  const el = document.getElementById(id);
+  if (el) el.value = today();
+});
+
+load();
+renderAll();
+setHeaderDate();
+
+// Close modals on overlay click
+document.getElementById('payModal').addEventListener('click', e => { if(e.target === e.currentTarget) closePayModal(); });
+document.getElementById('delModal').addEventListener('click', e => { if(e.target === e.currentTarget) closeDelModal(); });
+document.getElementById('restartModal').addEventListener('click', e => { if(e.target === e.currentTarget) closeRestartModal(); });
+document.getElementById('importModal').addEventListener('click', e => { if(e.target === e.currentTarget) closeImportModal(); });
+</script>
+</body>
+</html>
